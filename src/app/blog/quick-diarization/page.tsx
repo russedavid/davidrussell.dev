@@ -30,10 +30,6 @@ Speaker 1: Oh what a lovely day.
 Speaker 2: Oh what a lovely day, what a deal.
         `}
       />
-      <p>You can view the entire source code for this blog entry here:</p>
-      <a href="https://github.com/russedavid/diarization-stuff/blob/main/diarize_audio.py">
-        github.com/russedavid/diarization-stuff
-      </a>
       <br />
       <br />
       <h3>Main software used:</h3>
