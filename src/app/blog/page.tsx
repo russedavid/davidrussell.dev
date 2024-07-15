@@ -6,7 +6,15 @@ export default function Page() {
       <h1 className="py-2">
         In which thoughts, opinions and sometimes knowledge are shared.
       </h1>
-
+      <Link
+        href="blog/format-dataset"
+        passHref
+        className="py-4 underline"
+      >
+        <h2 className="mb-2 text-xl font-semibold">
+          Formatting a dataset for fine-tuning
+        </h2>
+      </Link>
       <Link
         href="blog/improve-diarization-claude"
         passHref
