@@ -7,10 +7,15 @@ export default function Page() {
         In which thoughts, opinions and sometimes knowledge are shared.
       </h1>
       <Link
-        href="blog/format-dataset"
+        href="blog/fury-road-redemption"
         passHref
         className="py-4 underline"
       >
+        <h2 className="mb-2 text-xl font-semibold">
+          The Redemption Arc: Mad Max Fury Road
+        </h2>
+      </Link>
+      <Link href="blog/format-dataset" passHref className="py-4 underline">
         <h2 className="mb-2 text-xl font-semibold">
           Formatting a dataset for fine-tuning
         </h2>
