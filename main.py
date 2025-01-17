@@ -196,7 +196,7 @@ def blog(request):
 def static_files(request):
     fname = request.path_params["fname"]
     ext = request.path_params["ext"]
-    return FileResponse(f"public/{fname}.{ext}")
+    return FileResponse(f"/public/{fname}.{ext}")
 
 
 serve()
