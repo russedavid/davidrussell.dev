@@ -2,7 +2,7 @@ from fasthtml.common import *
 from styles import BASE_STYLES
 from blogs import BLOG_POSTS
 
-app, rt = fast_app(debug=True, static_path="public")
+app, rt = fast_app(static_path="public")
 
 
 def nav_item(text, href, current_path):
@@ -61,7 +61,7 @@ def home(request):
         Img(src="/sun.png", alt="David with a bike", cls="profile-image"),
         Div(
             A(
-                Img(src="/avatar.jpg", cls="social-image"),
+                Img(src="./avatar.jpg", cls="social-image"),
                 Div(
                     H3("GitHub", cls="social-title"),
                     P("Check out my code repositories", cls="social-description"),
