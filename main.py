@@ -1,8 +1,107 @@
 from fasthtml.common import *
+from datetime import datetime, timedelta
+from collections import Counter, defaultdict
+import requests
 from styles import BASE_STYLES
 from blogs import BLOG_POSTS
 
 app, rt = fast_app()
+
+
+def calculate_aqi_stats(hours_info):
+    """Process AQI data and return stats"""
+    total_aqi = 0
+    count = 0
+    dominant_pollutants = Counter()
+    pollutant_details = defaultdict(list)
+    local_offset = timedelta(hours=-5)
+
+    for hour in hours_info:
+        if not hour.get("indexes"):
+            continue
+
+        utc_time = datetime.strptime(hour["dateTime"], "%Y-%m-%dT%H:%M:%SZ")
+        local_time = utc_time + local_offset
+
+        if 0 <= local_time.hour < 25:
+            for index in hour.get("indexes"):
+                aqi = index.get("aqi", 0)
+                total_aqi += aqi
+                count += 1
+
+                if dominant_pollutant := index.get("dominantPollutant"):
+                    dominant_pollutants[dominant_pollutant] += 1
+
+            # Process pollutant concentrations
+            for pollutant in hour.get("pollutants", []):
+                if "concentration" in pollutant and (code := pollutant.get("code")):
+                    pollutant_details[code].append(pollutant["concentration"]["value"])
+
+    # Calculate averages
+    average_aqi = total_aqi / count if count > 0 else 0
+    pollutant_averages = {
+        code: sum(values) / len(values) for code, values in pollutant_details.items()
+    }
+
+    return {
+        "average_aqi": average_aqi,
+        "dominant_pollutant": dominant_pollutants.most_common(1),
+        "pollutant_averages": pollutant_averages,
+    }
+
+
+def fetch_aqi_data(api_key, lat, lon):
+    """Fetch all pages of AQI data"""
+    url = f"https://airquality.googleapis.com/v1/history:lookup?key={api_key}"
+    data = {
+        "hours": 720,
+        "location": {"latitude": lat, "longitude": lon},
+        "pageSize": 100,
+        "extraComputations": ["POLLUTANT_CONCENTRATION"],
+    }
+
+    all_hours_info = []
+    next_page_token = None
+
+    while True:
+        if next_page_token:
+            data["pageToken"] = next_page_token
+
+        try:
+            response = requests.post(url, json=data).json()
+            if "error" in response:
+                raise ValueError(
+                    f"API Error: {response['error'].get('message', 'Unknown error')}"
+                )
+
+            if hours_info := response.get("hoursInfo", []):
+                all_hours_info.extend(hours_info)
+
+            if not (next_page_token := response.get("nextPageToken")):
+                break
+
+        except requests.RequestException as e:
+            raise ValueError(f"Request failed: {str(e)}")
+
+    return calculate_aqi_stats(all_hours_info)
+
+
+def handle_aqi_request(api_key, coordinates_text):
+    """Process multiple coordinates and return results"""
+    results = []
+
+    for line in coordinates_text.strip().split("\n"):
+        if not line.strip():
+            continue
+
+        try:
+            lat, lon = map(float, line.strip().split(","))
+            result = fetch_aqi_data(api_key, lat, lon)
+            results.append({"coordinates": (lat, lon), "data": result})
+        except (ValueError, IndexError) as e:
+            results.append({"coordinates": (line.strip(),), "error": str(e)})
+
+    return results
 
 
 def nav_item(text, href, current_path):
@@ -16,7 +115,7 @@ def create_nav(current_path):
             Button("🌙", cls="theme-toggle", id="theme-toggle"),
             nav_item("HOME", "/", current_path),
             nav_item("WORK", "/work", current_path),
-            nav_item("AI", "/ai", current_path),
+            nav_item("APPS", "/apps", current_path),
             nav_item("BLOG", "/blog", current_path),
             cls="nav-container",
         ),
@@ -140,10 +239,32 @@ def work(request):
     return create_layout(request.url.path, content)
 
 
-@rt("/ai")
+@rt("/apps")
 def ai(request):
     content = Div(
-        H1("AI PROJECTS"),
+        H1("APPS"),
+        Div(
+            H2("Air Quality Checker", cls="work-title"),
+            Form(
+                Textarea(
+                    id="coordinates",
+                    placeholder="Enter coordinates (lat,lon) - one per line\nExample:\n30.5002452018897,-97.7907459171229",
+                    rows=10,
+                    cls="w-full p-2",
+                ),
+                Input(
+                    id="api_key",
+                    type="password",
+                    placeholder="Google Maps API Key",
+                    cls="w-full p-2",
+                ),
+                Button("Check Air Quality", type="submit", cls="mt-4"),
+                hx_post="/check-aqi",
+                hx_target="#results",
+            ),
+            Div(id="results"),
+            cls="work-section",
+        ),
         Div(
             H2("Hotdog vs Hamburger Classifier", cls="work-title"),
             P("A fine-tuned ResNet model for food classification", cls="work-subtitle"),
@@ -157,7 +278,50 @@ def ai(request):
     return create_layout(request.url.path, content)
 
 
+@rt("/check-aqi")
+async def post(request):
+    form = await request.form()
+    api_key = form.get("api_key")
+    coordinates = form.get("coordinates")
 
+    try:
+        results = handle_aqi_request(api_key, coordinates)
+        return Div(
+            *[
+                Div(
+                    H3(
+                        f"Location: {result['coordinates'][0]}, {result['coordinates'][1]}"
+                    ),
+                    P(f"Average AQI: {result['data']['average_aqi']:.2f}"),
+                    *(
+                        []
+                        if "error" in result
+                        else [
+                            P(
+                                f"Most Common Pollutant: {result['data']['dominant_pollutant'][0][0]} "
+                                f"(Count: {result['data']['dominant_pollutant'][0][1]})"
+                            ),
+                            H4("Average Pollutant Concentrations:"),
+                            Ul(
+                                *[
+                                    Li(f"{pollutant}: {avg:.2f}")
+                                    for pollutant, avg in result["data"][
+                                        "pollutant_averages"
+                                    ].items()
+                                ]
+                            ),
+                        ]
+                    ),
+                    cls="mt-4 p-4 border rounded",
+                )
+                for result in results
+            ]
+        )
+    except Exception as e:
+        return Div(
+            P(f"Error: {str(e)}", cls="text-red-600"),
+            cls="mt-4 p-4 border border-red-600 rounded",
+        )
 
 
 @rt("/blog/{slug}")
