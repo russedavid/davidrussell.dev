@@ -2,7 +2,7 @@ from fasthtml.common import *
 from styles import BASE_STYLES
 from blogs import BLOG_POSTS
 
-app, rt = fast_app(static_path="public")
+app, rt = fast_app()
 
 
 def nav_item(text, href, current_path):
@@ -58,10 +58,10 @@ def home(request):
     content = Div(
         H1("DAVID RUSSELL"),
         P("Full-stack Developer // AI Explorer // Digital Craftsman", cls="subtitle"),
-        Img(src="/sun.png", alt="David with a bike", cls="profile-image"),
+        Img(src="public/sun.png", alt="David with a bike", cls="profile-image"),
         Div(
             A(
-                Img(src="./avatar.jpg", cls="social-image"),
+                Img(src="public/avatar.jpg", cls="social-image"),
                 Div(
                     H3("GitHub", cls="social-title"),
                     P("Check out my code repositories", cls="social-description"),
@@ -70,7 +70,7 @@ def home(request):
                 cls="social-card",
             ),
             A(
-                Img(src="/withbike.png", cls="social-image"),
+                Img(src="public/withbike.png", cls="social-image"),
                 Div(
                     H3("LinkedIn", cls="social-title"),
                     P("Connect with me professionally", cls="social-description"),
@@ -79,7 +79,7 @@ def home(request):
                 cls="social-card",
             ),
             A(
-                Img(src="/turbo.jpg", cls="social-image"),
+                Img(src="public/turbo.jpg", cls="social-image"),
                 Div(
                     H3("Twitter", cls="social-title"),
                     P("Follow my thoughts and updates", cls="social-description"),
@@ -196,7 +196,7 @@ def blog(request):
 def static_files(request):
     fname = request.path_params["fname"]
     ext = request.path_params["ext"]
-    return FileResponse(f"/public/{fname}.{ext}")
+    return FileResponse(f"public/{fname}.{ext}")
 
 
 serve()
