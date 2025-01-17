@@ -2,7 +2,7 @@ from fasthtml.common import *
 from styles import BASE_STYLES
 from blogs import BLOG_POSTS
 
-app, rt = fast_app(static_path="public")
+app, rt = fast_app(static_path="public", middleware=[])
 
 
 def nav_item(text, href, current_path):
