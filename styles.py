@@ -253,14 +253,18 @@ BASE_STYLES = """
         border-radius: 8px;
         padding: 2rem;
         margin: 2rem 0;
-        color: #E0E0E0;
+        color: var(--text-color);
     }
 
+    .work-section h3,
+    .work-section h4,
+    .work-section p,
+    .work-section li,
     .work-section [data-pico-element="h3"],
     .work-section [data-pico-element="h4"],
     .work-section [data-pico-element="p"],
     .work-section [data-pico-element="li"] {
-        color: #E0E0E0;
+        color: var(--text-color);
     }
 
     .work-title {
