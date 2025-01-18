@@ -253,6 +253,7 @@ BASE_STYLES = """
         border-radius: 8px;
         padding: 2rem;
         margin: 2rem 0;
+        color: #E0E0E0;
     }
 
     .work-title {
