@@ -262,7 +262,7 @@ def ai(request):
                 hx_post="/check-aqi",
                 hx_target="#results",
             ),
-            Div(id="results"),
+            Div(id="results", cls="work-section"),
             cls="work-section",
         ),
         Div(
