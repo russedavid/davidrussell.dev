@@ -256,8 +256,10 @@ BASE_STYLES = """
         color: #E0E0E0;
     }
 
-    .work-section p,
-    .work-section li {
+    .work-section [data-pico-element="h3"],
+    .work-section [data-pico-element="h4"],
+    .work-section [data-pico-element="p"],
+    .work-section [data-pico-element="li"] {
         color: #E0E0E0;
     }
 
