@@ -312,7 +312,7 @@ async def post(request):
                             ),
                         ]
                     ),
-                    cls="mt-4 p-4 border rounded",
+                    cls="mt-4 p-4 border rounded work-section",
                 )
                 for result in results
             ]
