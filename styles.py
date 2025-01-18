@@ -256,6 +256,11 @@ BASE_STYLES = """
         color: #E0E0E0;
     }
 
+    .work-section p,
+    .work-section li {
+        color: #E0E0E0;
+    }
+
     .work-title {
         color: var(--neon-pink);
         margin: 0;
