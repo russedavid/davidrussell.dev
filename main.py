@@ -219,10 +219,7 @@ def work(request):
             H2("Amazon Web Services", cls="work-title"),
             P("Software Developer", cls="work-subtitle"),
             Ul(
-                Li("I started at AWS as an intern in 2020."),
-                Li(
-                    "I returned as a full-time software developer in 2021, in the World Wide Revenue Operations org."
-                ),
+                Li("I started at AWS in 2020."),
                 Li(
                     "I helped build the SUDS (Sales Unified Data Service), a graphql based server meant to provide a single point of access to the entirety of the sales and marketing data available at AWS."
                 ),
