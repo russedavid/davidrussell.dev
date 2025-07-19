@@ -1,3 +1,4 @@
+# main.py
 from fasthtml.common import *
 from datetime import datetime, timedelta
 from collections import Counter, defaultdict
@@ -114,8 +115,8 @@ def create_nav(current_path):
         Div(
             Button("🌙", cls="theme-toggle", id="theme-toggle"),
             nav_item("HOME", "/", current_path),
-            nav_item("WORK", "/work", current_path),
-            nav_item("APPS", "/apps", current_path),
+            nav_item("ABOUT", "/about", current_path),
+            nav_item("TOOLS", "/tools", current_path),
             nav_item("BLOG", "/blog", current_path),
             cls="nav-container",
         ),
@@ -142,10 +143,7 @@ def create_nav(current_path):
 
 def create_layout(current_path, *content):
     title = "David Russell - Developer"
-    return Container(
-        Title(title),
-        Meta(name="description", content="Full-stack Developer and AI Explorer"),
-        Meta(property="og:title", content=title),
+    return Title(title), Container(
         Style(BASE_STYLES),
         create_nav(current_path),
         *content,
@@ -154,10 +152,59 @@ def create_layout(current_path, *content):
 
 @rt("/")
 def home(request):
+    posts_sorted = []
+    for slug, post in BLOG_POSTS.items():
+        posts_sorted.append((slug, post))
+        break
+    first_slug, first_post = posts_sorted[0]
+    blog_preview_title = first_post["title"]
+    blog_preview_date = first_post["date"]
+    blog_preview_snippet = first_post["snippet"]
+    blog_preview_link = f"/blog/{first_slug}"
+
     content = Div(
-        H1("DAVID RUSSELL"),
-        P("Full-stack Developer // AI Explorer // Digital Craftsman", cls="subtitle"),
-        Img(src="public/sun.png", alt="David with a bike", cls="profile-image"),
+        # Main hero section - center of screen
+        Div(
+            H1("DAVID RUSSELL", cls="hero-title"),
+            P("Programmer", cls="hero-subtitle"),
+            Img(src="public/sun.png", alt="David with a bike", cls="hero-image"),
+            cls="hero-section"
+        ),
+        
+        # Left sidebar with feature boxes
+        Div(
+            Div(
+                H2("About Me", cls="feature-title"),
+                P("In which I briefly describe the life and opinions of the eponymous David Russell.", cls="feature-description"),
+                A("Learn More", href="/about", cls="feature-link"),
+                cls="feature-box about-box",
+            ),
+            Div(
+                H2("Blog", cls="feature-title"),
+                A(
+                    H3(blog_preview_title),
+                    P(blog_preview_date),
+                    P(blog_preview_snippet + "..."),
+                    href=blog_preview_link,
+                    cls="blog-preview-link",
+                ),
+                A("View All Posts", href="/blog", cls="feature-link"),
+                cls="feature-box blog-box",
+            ),
+            Div(
+                H2("Tools", cls="feature-title"),
+                Ul(
+                    A(Li("Air Quality Checker"), href="/tools#air-quality-checker"),
+                    A(Li("Hotdog vs Hamburger Classifier"), href="/tools#hotdog-vs-hamburger-classifier"),
+                    cls="tools-list"
+                ),
+                A("View All Tools", href="/tools", cls="feature-link"),
+                cls="feature-box tools-box",
+            ),
+            cls="sidebar-left"
+        ),
+        
+        # Social cards - bottom middle/right
         Div(
             A(
                 Img(src="public/avatar.jpg", cls="social-image"),
@@ -183,52 +230,35 @@ def home(request):
                     H3("Twitter", cls="social-title"),
                     P("Follow my thoughts and updates", cls="social-description"),
                 ),
-                href="https://twitter.com/davidtherusse",
+                href="https://twitter.com/davidrusselldev",
                 cls="social-card",
             ),
+            A(
+                Div(cls="social-image-placeholder"),
+                Div(
+                    H3("High Order Software", cls="social-title"),
+                    P("Visit my consulting business homepage", cls="social-description"),
+                ),
+                href="https://hos.net",
+                cls="social-card",
+            ),
+            cls="social-section"
         ),
+        cls="homepage-container"
     )
     return create_layout(request.url.path, content)
 
 
-@rt("/work")
-def work(request):
+@rt("/about")
+def about(request):
     content = Div(
-        H1("MY WORK"),
+        H1("ABOUT ME"),
         Div(
-            H2("Corbalt", cls="work-title"),
-            P("Software Developer", cls="work-subtitle"),
-            P(
-                "At ",
-                A("Corbalt", href="https://www.corbalt.com/"),
-                " I help my team and the government make great decisions about how to build and maintain software that scales.",
-            ),
-            cls="work-section",
-        ),
-        Div(
-            H2("ATX LED", cls="work-title"),
-            P("Software Developer", cls="work-subtitle"),
-            P(
-                """I started working with """,
-                A("ATX LED", href="https://atxledinc.com"),
-                """ in 2023. Since then, I've shipped hundreds of new features, integrations and improvements to the ATX LED home automation hub using JavaScript, React, Python and more.""",
-            ),
-            cls="work-section",
-        ),
-        Div(
-            H2("Amazon Web Services", cls="work-title"),
-            P("Software Developer", cls="work-subtitle"),
+            P("In addition to writing code, designing systems, and building tools that make the aforementioned easier, I:"),
             Ul(
-                Li("I started at AWS in 2020."),
-                Li(
-                    "I helped build the SUDS (Sales Unified Data Service), a graphql based server meant to provide a single point of access to the entirety of the sales and marketing data available at AWS."
-                ),
-                Li(
-                    "I built a developer experience for on-boarding data sources to SUDS that was intuitive and pain free."
-                ),
-                Li(
-                    "SUDS received a mandate to on-board all first-party software teams in WWRO"
-                ),
+                Li("Am a full-time enjoyer of collaborative storytelling modalities."),
+                Li("Explore new technologies and apply them to real-world problems."),
+                Li("Read psychological literary fiction and watch deep, meaning-filled films."),
             ),
             cls="work-section",
         ),
@@ -236,12 +266,12 @@ def work(request):
     return create_layout(request.url.path, content)
 
 
-@rt("/apps")
-def ai(request):
+@rt("/tools")
+def tools(request):
     content = Div(
-        H1("APPS"),
+        H1("TOOLS"),
         Div(
-            H2("Air Quality Checker", cls="work-title"),
+            H2("Air Quality Checker", cls="work-title", id="air-quality-checker"),
             Form(
                 Textarea(
                     id="coordinates",
@@ -263,7 +293,7 @@ def ai(request):
             cls="work-section",
         ),
         Div(
-            H2("Hotdog vs Hamburger Classifier", cls="work-title"),
+            H2("Hotdog vs Hamburger Classifier", cls="work-title", id="hotdog-vs-hamburger-classifier"),
             P("A fine-tuned ResNet model for food classification", cls="work-subtitle"),
             Iframe(
                 src="https://davidrussell-hamburger-or-hotdog.hf.space",
@@ -309,7 +339,7 @@ async def post(request):
                             ),
                         ]
                     ),
-                    cls="mt-4 p-4 border rounded work-section",
+                    cls="mt-4 p-4 border work-section",
                 )
                 for result in results
             ]
@@ -317,7 +347,7 @@ async def post(request):
     except Exception as e:
         return Div(
             P(f"Error: {str(e)}", cls="text-red-600"),
-            cls="mt-4 p-4 border border-red-600 rounded",
+            cls="mt-4 p-4 border border-red-600",
         )
 
 
