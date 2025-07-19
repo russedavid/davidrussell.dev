@@ -234,7 +234,7 @@ def home(request):
                 cls="social-card",
             ),
             A(
-                Div(cls="social-image-placeholder"),
+                Img(src="public/hos.png", cls="social-image"),
                 Div(
                     H3("High Order Software", cls="social-title"),
                     P("Visit my consulting business homepage", cls="social-description"),
