@@ -5,8 +5,8 @@ from collections import Counter, defaultdict
 import requests
 from styles import BASE_STYLES
 from blogs import BLOG_POSTS
-
-app, rt = fast_app()
+css = Style(BASE_STYLES)
+app, rt = fast_app(hdrs=(picolink, css))
 
 
 def calculate_aqi_stats(hours_info):
@@ -144,7 +144,6 @@ def create_nav(current_path):
 def create_layout(current_path, *content):
     title = "David Russell - Developer"
     return Title(title), Container(
-        Style(BASE_STYLES),
         create_nav(current_path),
         *content,
     )
