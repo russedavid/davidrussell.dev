@@ -38,8 +38,8 @@ The application has no session middleware. Static serving is restricted to `asse
 
 ## Project pages
 
-- **Frontline**: `/projects/frontline`, with the public demo, source repository, a clearly labeled report illustration, and links to evaluation work.
-- **Over The Shoulder Coder**: `/projects/otsc`, with the product story and an interactive, fixed-example walkthrough. It is an illustration, not a running desktop app or live inference endpoint. OTSC's source repository and recorded evaluations remain private.
+- **Frontline**: `/projects/frontline`, with the public demo, [source repository](https://github.com/russedavid/report-generator), a clearly labeled report illustration, and links to evaluation work.
+- **Over The Shoulder Coder**: `/projects/otsc`, with the [source repository](https://github.com/russedavid/over-the-shoulder), product story, and an interactive, fixed-example walkthrough. It is an illustration, not a running desktop app or live inference endpoint. Recorded evaluations remain private.
 
 The homepage retains the original About/Blog/Tools sidebar, center portrait, and prominent GitHub/LinkedIn/Twitter/High Order Software picture cards and copy. Frontline and OTSC are additions below that layout.
 
