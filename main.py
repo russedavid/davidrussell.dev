@@ -24,7 +24,9 @@ app = FastHTML(
     secret_key="sessions-disabled",
     htmlkw={"lang": "en", "data-theme": "light"},
 )
-app.mount("/public", StaticFiles(directory=PUBLIC), name="public")
+# Vercel excludes public assets from the Python bundle and serves them separately.
+if PUBLIC.is_dir():
+    app.mount("/public", StaticFiles(directory=PUBLIC), name="public")
 rt = app.route
 
 

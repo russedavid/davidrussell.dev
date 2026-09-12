@@ -66,4 +66,6 @@ The browser check covers desktop and phone layouts, theme persistence, real HTMX
 
 The existing Vercel project is connected to this repository. Pushing `main` triggers its configured deployment. The ASGI application is exported as `main:app`; importing it does not start a development server or write a session key.
 
+Vercel serves public assets separately from the Python function. The app mounts `public/` only when that directory exists, so local asset serving works without making deployment startup depend on it.
+
 Keep `.vercel/`, `.env*`, `.sesskey`, caches, and review output out of Git. The site refresh was checked locally; the owner is handling verification of the live deployment.
