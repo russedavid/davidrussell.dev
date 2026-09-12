@@ -2,11 +2,23 @@
 from fasthtml.common import *
 from datetime import datetime, timedelta
 from collections import Counter, defaultdict
+from pathlib import Path
 import requests
+from starlette.staticfiles import StaticFiles
 from styles import BASE_STYLES
 from blogs import BLOG_POSTS
 css = Style(BASE_STYLES)
-app, rt = fast_app(hdrs=(picolink, css))
+PUBLIC = Path(__file__).resolve().parent / "public"
+app = FastHTML(
+    hdrs=(Link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.min.css"), css),
+    htmx4=True,
+    surreal=False,
+    sess_cls=None,
+    secret_key="sessions-disabled",
+    htmlkw={"lang": "en"},
+)
+app.mount("/public", StaticFiles(directory=PUBLIC), name="public")
+rt = app.route
 
 
 def calculate_aqi_stats(hours_info):
@@ -143,9 +155,10 @@ def create_nav(current_path):
 
 def create_layout(current_path, *content):
     title = "David Russell - Developer"
-    return Title(title), Container(
+    return Title(title), Main(
         create_nav(current_path),
         *content,
+        cls="container",
     )
 
 
@@ -382,11 +395,5 @@ def blog(request):
     return create_layout(request.url.path, content)
 
 
-@rt("/{fname:path}.{ext:static}")
-def static_files(request):
-    fname = request.path_params["fname"]
-    ext = request.path_params["ext"]
-    return FileResponse(f"public/{fname}.{ext}")
-
-
-serve()
+if __name__ == "__main__":
+    serve()
