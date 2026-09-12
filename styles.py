@@ -236,3 +236,71 @@ BASE_STYLES += """
 .project-copy .project-stack { margin-bottom: 1.3rem; }
 @media (max-width: 700px) { .project-card > .project-preview { min-height: 0; } }
 """
+
+
+THEME_SCRIPT = """
+(() => {
+  const root = document.documentElement;
+  const update = () => {
+    const toggle = document.getElementById('theme-toggle');
+    if (!toggle) return;
+    const dark = root.dataset.theme === 'dark';
+    toggle.setAttribute('aria-label', dark ? 'Use light theme' : 'Use dark theme');
+    toggle.setAttribute('aria-pressed', String(dark));
+    toggle.querySelector('[data-theme-label]').textContent = dark ? 'Light' : 'Dark';
+  };
+  document.addEventListener('click', event => {
+    if (!event.target.closest('#theme-toggle')) return;
+    root.dataset.theme = root.dataset.theme === 'dark' ? 'light' : 'dark';
+    try { localStorage.setItem('theme', root.dataset.theme); } catch {}
+    update();
+  });
+  document.addEventListener('DOMContentLoaded', update);
+})();
+"""
+
+BASE_STYLES += """
+/* Preserve the original homepage composition and its prominent picture cards. */
+.site-header { position: sticky; top: 0; z-index: 1000; background: var(--background); }
+.site-nav { min-height: 66px; gap: 1rem; justify-content: space-between; }
+.site-nav .nav-item { font-size: .85rem; }
+.site-nav .theme-toggle { flex-shrink: 0; }
+.home-main { padding-top: 34px; }
+.homepage-container { display: grid; grid-template-areas: 'sidebar hero social'; grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr); gap: 20px; align-items: start; margin-bottom: 3rem; }
+.homepage-container .hero-section { grid-area: hero; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0; padding: 0; }
+.homepage-container .hero-title { font: 600 clamp(1.4rem,2.4vw,2.3rem)/1.1 'Source Sans',Arial,sans-serif; letter-spacing: -.04em; margin: 0; white-space: nowrap; }
+.homepage-container .hero-subtitle { font-style: italic; font-size: 1.15rem; color: var(--text); margin: .65rem 0 1rem; }
+.homepage-container .hero-image { width: 200px; max-width: 100%; height: auto; object-fit: contain; border-radius: 0; }
+.sidebar-left { grid-area: sidebar; display: flex; flex-direction: column; gap: 0; }
+.feature-box { padding: 16px; border: 1px solid var(--border); background: var(--surface); }
+.feature-box + .feature-box { border-top: 0; }
+.feature-title { font: 600 1.2rem/1.3 'Source Sans',sans-serif; margin: 0 0 .85rem; }
+.feature-description { font-size: .95rem; line-height: 1.5; margin-bottom: 1rem; }
+.feature-link { display: inline-block; padding: .45rem .8rem; border: 1px solid var(--strong-border); text-decoration: none; font-size: .85rem; font-weight: 600; }
+.feature-link:hover { background: var(--highlight); }
+.blog-preview-link { display: block; text-decoration: none; }
+.blog-preview-link h3 { font: 600 1.2rem/1.3 'Source Sans',sans-serif; color: var(--accent); margin: .7rem 0; }
+.blog-preview-link p { font-size: .9rem; color: var(--muted); }
+.blog-preview-link:hover h3 { text-decoration: underline; }
+.feature-box .tools-list { font-size: .9rem; padding-left: 1.1rem; }
+.social-section { grid-area: social; display: flex; flex-direction: column; gap: 15px; }
+.social-card { display: flex; gap: 15px; align-items: center; padding: 15px; border: 1px solid var(--border); text-decoration: none; color: var(--text); background: var(--surface); }
+.social-card:hover { border-color: var(--accent); background: var(--highlight); color: var(--text); }
+.social-card > div { min-width: 0; }
+.social-image { width: 50px; height: 50px; flex: 0 0 50px; object-fit: cover; border-radius: 0; }
+.logo-image { object-fit: contain; }
+.social-title { font: 600 1.05rem/1.3 'Source Sans',sans-serif; margin: 0 0 .3rem; }
+.social-description { font-size: .83rem; line-height: 1.4; margin: 0; }
+@media (max-width: 850px) {
+    .homepage-container { grid-template-areas: 'hero hero' 'sidebar social'; grid-template-columns: minmax(0,1fr) minmax(0,1fr); }
+    .homepage-container .hero-section { margin-bottom: 1rem; }
+    .homepage-container .hero-title { font-size: 2.4rem; }
+}
+@media (max-width: 620px) {
+    .site-nav { min-height: 72px; flex-wrap: nowrap; gap: .5rem; padding-block: .6rem; }
+    .site-nav .nav-item { font-size: .63rem; }
+    .site-nav .theme-toggle { padding: .2rem .35rem; font-size: .65rem; }
+    .homepage-container { grid-template-areas: 'hero' 'social' 'sidebar'; grid-template-columns: 1fr; gap: 1.6rem; }
+    .homepage-container .hero-title { font-size: 2.1rem; }
+}
+"""

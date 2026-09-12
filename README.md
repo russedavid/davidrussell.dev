@@ -32,16 +32,18 @@ Checked September 12, 2026:
 | Uvicorn | 0.52.4 |
 | Requests | 2.34.2 |
 
-[HTMX 4](https://four.htmx.org/docs/) is selected explicitly: npm's `latest` tag still points to the 2.x line. Pico is the site's styling foundation; MonsterUI is not needed here. Source Serif 4 and Source Sans 3 are served locally, with their licenses in `public/fonts/`.
+[HTMX 4](https://four.htmx.org/docs/) is selected explicitly: npm's `latest` tag still points to the 2.x line. Pico is the site's styling foundation; MonsterUI is not needed here. Source Serif 4 and Source Sans 3 are served locally, with their licenses in `assets/fonts/`.
 
-The application has no session middleware. Static serving is restricted to `public/`; local session files, Python sources, and development artifacts are not web assets.
+The application has no session middleware. Static serving is restricted to `assets/`, exposed under the existing `/public/` URLs; local session files, Python sources, and development artifacts are not web assets.
 
 ## Project pages
 
 - **Frontline**: `/projects/frontline`, with the public demo, source repository, a clearly labeled report illustration, and links to evaluation work.
 - **Over The Shoulder Coder**: `/projects/otsc`, with the product story and an interactive, fixed-example walkthrough. It is an illustration, not a running desktop app or live inference endpoint. OTSC's source repository and recorded evaluations remain private.
 
-Project descriptions and sample content live in `projects.py`. `main.py` owns routes and layout, `styles.py` supplies the theme, and `public/site.js` persists the theme preference. Blog content remains in `blogs.py`.
+The homepage retains the original About/Blog/Tools sidebar, center portrait, and prominent GitHub/LinkedIn/Twitter/High Order Software picture cards and copy. Frontline and OTSC are additions below that layout.
+
+Project descriptions and sample content live in `projects.py`. `main.py` owns routes and layout, `styles.py` supplies the theme and its inline preference toggle. Blog content remains in `blogs.py`.
 
 ## Checks
 
@@ -66,6 +68,6 @@ The browser check covers desktop and phone layouts, theme persistence, real HTMX
 
 The existing Vercel project is connected to this repository. Pushing `main` triggers its configured deployment. The ASGI application is exported as `main:app`; importing it does not start a development server or write a session key.
 
-Vercel serves public assets separately from the Python function. The app mounts `public/` only when that directory exists, so local asset serving works without making deployment startup depend on it.
+Photos and fonts live in `assets/` so Vercel bundles them with the Python application; its builder excludes directories named `public/`. FastHTML serves `assets/` under the existing `/public/` URLs. The theme toggle is included directly in the HTML, so it does not depend on a separate script request.
 
 Keep `.vercel/`, `.env*`, `.sesskey`, caches, and review output out of Git. The site refresh was checked locally; the owner is handling verification of the live deployment.

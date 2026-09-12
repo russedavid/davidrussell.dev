@@ -4,18 +4,18 @@ from pathlib import Path
 from starlette.staticfiles import StaticFiles
 from starlette.concurrency import run_in_threadpool
 from air_quality import handle_aqi_request
-from styles import BASE_STYLES
+from styles import BASE_STYLES, THEME_SCRIPT
 from blogs import BLOG_POSTS
 from projects import PROJECTS, project_card, project_section, frontline_page, otsc_page, otsc_walkthrough
 css = Style(BASE_STYLES)
-PUBLIC = Path(__file__).resolve().parent / "public"
+ASSETS = Path(__file__).resolve().parent / "assets"
 app = FastHTML(
     hdrs=(
         Script("try { document.documentElement.dataset.theme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'; } catch {}"),
         Link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.min.css"),
         css,
-        Link(rel="icon", href="/public/favicon.svg", type="image/svg+xml"),
-        Script(src="/public/site.js", defer=True),
+        Link(rel="icon", href="/public/avatar.jpg", type="image/jpeg"),
+        Script(THEME_SCRIPT),
     ),
     htmx4=True,
     surreal=False,
@@ -24,9 +24,9 @@ app = FastHTML(
     secret_key="sessions-disabled",
     htmlkw={"lang": "en", "data-theme": "light"},
 )
-# Vercel excludes public assets from the Python bundle and serves them separately.
-if PUBLIC.is_dir():
-    app.mount("/public", StaticFiles(directory=PUBLIC), name="public")
+# Keep the existing /public URLs, with assets bundled alongside the FastHTML app.
+if ASSETS.is_dir():
+    app.mount("/public", StaticFiles(directory=ASSETS), name="public")
 rt = app.route
 
 
@@ -38,17 +38,12 @@ def nav_item(text, href, current_path):
 def create_nav(current_path):
     return Header(
         Nav(
-            A("dr.", href="/", cls="brand", aria_label="David Russell home"),
-            Div(
-                *(nav_item(label, url, current_path) for label, url in [("Home", "/"), ("Projects", "/projects"), ("About", "/about"), ("Tools", "/tools"), ("Blog", "/blog")]),
-                Button(Span("◐", aria_hidden="true"), Span("Dark", data_theme_label=""),
-                       id="theme-toggle", cls="theme-toggle", type="button", aria_label="Use dark theme", aria_pressed="false"),
-                cls="nav-links",
-            ),
+            Button(Span("◐", aria_hidden="true"), Span("Dark", data_theme_label=""),
+                   id="theme-toggle", cls="theme-toggle", type="button", aria_label="Use dark theme", aria_pressed="false"),
+            *(nav_item(label, url, current_path) for label, url in [("HOME", "/"), ("PROJECTS", "/projects"), ("ABOUT", "/about"), ("TOOLS", "/tools"), ("BLOG", "/blog")]),
             cls="site-nav site-width", aria_label="Main navigation",
         ), cls="site-header",
     )
-
 
 def create_layout(current_path, *content, title=None, description=None):
     title = title or {"/about": "About", "/tools": "Tools", "/blog": "Writing"}.get(current_path)
@@ -67,51 +62,108 @@ def create_layout(current_path, *content, title=None, description=None):
         Meta(name="twitter:card", content="summary"),
         A("Skip to content", href="#main-content", cls="skip-link"),
         create_nav(current_path),
-        Main(*content, id="main-content", cls="site-main site-width"),
-        Footer(
-            P("David Russell"),
-            Div(
-                A("GitHub", href="https://github.com/russedavid"),
-                A("LinkedIn", href="https://www.linkedin.com/in/davidrussellengineer/"),
-                A("Twitter", href="https://twitter.com/davidrusselldev"),
-                A("High Order Software", href="https://hos.net"),
-                cls="footer-links",
-            ), cls="site-footer site-width",
-        ),
+        Main(*content, id="main-content", cls="site-main site-width home-main" if current_path == "/" else "site-main site-width"),
+
     )
 
 
 @rt("/")
 def home(request):
-    slug, latest = next(iter(BLOG_POSTS.items()))
-    return create_layout(
-        "/",
-        Section(
-            Div(
-                P("Software / Systems / Applied AI", cls="eyebrow"),
-                H1("David Russell", cls="hero-title"),
-                P("I build software, design systems, and make tools that help people do both.", cls="hero-subtitle"),
-                Div(A("Explore my work ↓", href="#selected-work", cls="button-link"),
-                    A("Find me on GitHub ↗", href="https://github.com/russedavid", cls="text-link"), cls="actions"),
-            ),
-            Figure(Img(src="/public/sun.png", alt="David Russell outdoors", cls="hero-image", width=315, height=335), cls="hero-portrait"),
-            cls="hero-section",
-        ),
-        project_section(),
-        Section(
-            P("A few other interests", cls="eyebrow"),
-            Div(
-                Div(P("From the blog", cls="blog-date"), H3(A(latest["title"], href=f"/blog/{slug}")),
-                    P(latest["snippet"]), A("All writing →", href="/blog", cls="text-link")),
-                Div(P("Small tools & experiments", cls="blog-date"), H3("Useful. Occasionally curious."),
-                    Ul(Li(A("Air Quality Checker", href="/tools#air-quality-checker")),
-                       Li(A("Hotdog vs Hamburger Classifier", href="/tools#hotdog-vs-hamburger-classifier")), cls="tools-list"),
-                    A("All tools →", href="/tools", cls="text-link")),
-                cls="interest-grid",
-            ), cls="interests",
-        ),
-    )
+    posts_sorted = []
+    for slug, post in BLOG_POSTS.items():
+        posts_sorted.append((slug, post))
+        break
+    first_slug, first_post = posts_sorted[0]
+    blog_preview_title = first_post["title"]
+    blog_preview_date = first_post["date"]
+    blog_preview_snippet = first_post["snippet"]
+    blog_preview_link = f"/blog/{first_slug}"
 
+    content = Div(
+        # Main hero section - center of screen
+        Div(
+            H1("DAVID RUSSELL", cls="hero-title"),
+            P("Programmer", cls="hero-subtitle"),
+            Img(src="/public/sun.png", alt="David Russell outdoors", cls="hero-image"),
+            cls="hero-section"
+        ),
+
+        # Left sidebar with feature boxes
+        Div(
+            Div(
+                H2("About Me", cls="feature-title"),
+                P("In which I briefly describe the life and opinions of the eponymous David Russell.", cls="feature-description"),
+                A("Learn More", href="/about", cls="feature-link"),
+                cls="feature-box about-box",
+            ),
+            Div(
+                H2("Blog", cls="feature-title"),
+                A(
+                    H3(blog_preview_title),
+                    P(blog_preview_date),
+                    P(blog_preview_snippet + "..."),
+                    href=blog_preview_link,
+                    cls="blog-preview-link",
+                ),
+                A("View All Posts", href="/blog", cls="feature-link"),
+                cls="feature-box blog-box",
+            ),
+            Div(
+                H2("Tools", cls="feature-title"),
+                Ul(
+                    Li(A("Air Quality Checker", href="/tools#air-quality-checker")),
+                    Li(A("Hotdog vs Hamburger Classifier", href="/tools#hotdog-vs-hamburger-classifier")),
+                    cls="tools-list"
+                ),
+                A("View All Tools", href="/tools", cls="feature-link"),
+                cls="feature-box tools-box",
+            ),
+            cls="sidebar-left"
+        ),
+
+        # Social cards - bottom middle/right
+        Div(
+            A(
+                Img(src="/public/avatar.jpg", alt="David Russell", cls="social-image"),
+                Div(
+                    H3("GitHub", cls="social-title"),
+                    P("Check out my code repositories", cls="social-description"),
+                ),
+                href="https://github.com/russedavid",
+                cls="social-card",
+            ),
+            A(
+                Img(src="/public/withbike.png", alt="David with a bike", cls="social-image"),
+                Div(
+                    H3("LinkedIn", cls="social-title"),
+                    P("Connect with me professionally", cls="social-description"),
+                ),
+                href="https://www.linkedin.com/in/davidrussellengineer/",
+                cls="social-card",
+            ),
+            A(
+                Img(src="/public/turbo.jpg", alt="Photo for David’s Twitter profile", cls="social-image"),
+                Div(
+                    H3("Twitter", cls="social-title"),
+                    P("Follow my thoughts and updates", cls="social-description"),
+                ),
+                href="https://twitter.com/davidrusselldev",
+                cls="social-card",
+            ),
+            A(
+                Img(src="/public/hos.png", alt="High Order Software logo", cls="social-image logo-image"),
+                Div(
+                    H3("High Order Software", cls="social-title"),
+                    P("Visit my consulting business homepage", cls="social-description"),
+                ),
+                href="https://hos.net",
+                cls="social-card",
+            ),
+            cls="social-section"
+        ),
+        cls="homepage-container"
+    )
+    return create_layout(request.url.path, content, project_section())
 
 @rt("/projects")
 def projects_index(request):
