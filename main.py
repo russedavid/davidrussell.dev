@@ -6,7 +6,7 @@ from starlette.concurrency import run_in_threadpool
 from air_quality import handle_aqi_request
 from styles import BASE_STYLES
 from blogs import BLOG_POSTS
-from projects import PROJECTS, project_card, project_section, frontline_page
+from projects import PROJECTS, project_card, project_section, frontline_page, otsc_page, otsc_walkthrough
 css = Style(BASE_STYLES)
 PUBLIC = Path(__file__).resolve().parent / "public"
 app = FastHTML(
@@ -113,6 +113,23 @@ def projects_index(request):
 @rt("/projects/frontline")
 def frontline(request):
     return create_layout(request.url.path, *frontline_page(), title="Frontline", description=PROJECTS[0]["description"])
+
+
+@rt("/projects/otsc")
+def otsc(request):
+    try:
+        step = int(request.query_params.get("step", "0"))
+    except ValueError:
+        step = 0
+    step = step if 0 <= step < 3 else 0
+    return create_layout(request.url.path, *otsc_page(step), title="Over The Shoulder Coder", description=PROJECTS[1]["description"])
+
+
+@rt("/projects/otsc/walkthrough/{step:int}")
+def sample_session(step: int):
+    if step not in range(3):
+        raise HTTPException(404)
+    return otsc_walkthrough(step)
 
 
 @rt("/about")
