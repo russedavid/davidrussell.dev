@@ -9,165 +9,99 @@ from blogs import BLOG_POSTS
 css = Style(BASE_STYLES)
 PUBLIC = Path(__file__).resolve().parent / "public"
 app = FastHTML(
-    hdrs=(Link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.min.css"), css),
+    hdrs=(
+        Script("try { document.documentElement.dataset.theme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'; } catch {}"),
+        Link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.min.css"),
+        css,
+        Script(src="/public/site.js", defer=True),
+    ),
     htmx4=True,
     surreal=False,
     sess_cls=None,
     secret_key="sessions-disabled",
-    htmlkw={"lang": "en"},
+    htmlkw={"lang": "en", "data-theme": "light"},
 )
 app.mount("/public", StaticFiles(directory=PUBLIC), name="public")
 rt = app.route
 
 
 def nav_item(text, href, current_path):
-    active_class = "active" if href == current_path else ""
-    return A(text, href=href, cls=f"nav-item {active_class}")
+    active = current_path == href or (href != "/" and current_path.startswith(href + "/"))
+    return A(text, href=href, cls="nav-item active" if active else "nav-item", aria_current="page" if active else None)
 
 
 def create_nav(current_path):
-    return Nav(
-        Div(
-            Button("🌙", cls="theme-toggle", id="theme-toggle"),
-            nav_item("HOME", "/", current_path),
-            nav_item("ABOUT", "/about", current_path),
-            nav_item("TOOLS", "/tools", current_path),
-            nav_item("BLOG", "/blog", current_path),
-            cls="nav-container",
-        ),
-        Script(
-            """
-            const toggle = document.getElementById('theme-toggle');
-            const root = document.documentElement;
-            
-            const savedTheme = localStorage.getItem('theme') || 'dark';
-            if (savedTheme === 'light') {
-                root.classList.add('light-theme');
-                toggle.textContent = '☀️';
-            }
-            
-            toggle.addEventListener('click', () => {
-                root.classList.toggle('light-theme');
-                toggle.textContent = root.classList.contains('light-theme') ? '☀️' : '🌙';
-                localStorage.setItem('theme', root.classList.contains('light-theme') ? 'light' : 'dark');
-            });
-        """
-        ),
+    return Header(
+        Nav(
+            A("dr.", href="/", cls="brand", aria_label="David Russell home"),
+            Div(
+                *(nav_item(label, url, current_path) for label, url in [("Home", "/"), ("About", "/about"), ("Tools", "/tools"), ("Blog", "/blog")]),
+                Button(Span("◐", aria_hidden="true"), Span("Dark", data_theme_label=""),
+                       id="theme-toggle", cls="theme-toggle", type="button", aria_label="Use dark theme", aria_pressed="false"),
+                cls="nav-links",
+            ),
+            cls="site-nav site-width", aria_label="Main navigation",
+        ), cls="site-header",
     )
 
 
-def create_layout(current_path, *content):
-    title = "David Russell - Developer"
-    return Title(title), Main(
+def create_layout(current_path, *content, title=None, description=None):
+    page_title = f"{title} | David Russell" if title else "David Russell — Software engineer"
+    return (
+        Title(page_title),
+        Meta(name="description", content=description or "Software, systems, and applied AI. Projects and writing by David Russell."),
+        A("Skip to content", href="#main-content", cls="skip-link"),
         create_nav(current_path),
-        *content,
-        cls="container",
+        Main(*content, id="main-content", cls="site-main site-width"),
+        Footer(
+            P("David Russell"),
+            Div(
+                A("GitHub", href="https://github.com/russedavid"),
+                A("LinkedIn", href="https://www.linkedin.com/in/davidrussellengineer/"),
+                A("Twitter", href="https://twitter.com/davidrusselldev"),
+                A("High Order Software", href="https://hos.net"),
+                cls="footer-links",
+            ), cls="site-footer site-width",
+        ),
     )
 
 
 @rt("/")
 def home(request):
-    posts_sorted = []
-    for slug, post in BLOG_POSTS.items():
-        posts_sorted.append((slug, post))
-        break
-    first_slug, first_post = posts_sorted[0]
-    blog_preview_title = first_post["title"]
-    blog_preview_date = first_post["date"]
-    blog_preview_snippet = first_post["snippet"]
-    blog_preview_link = f"/blog/{first_slug}"
-
-    content = Div(
-        # Main hero section - center of screen
-        Div(
-            H1("DAVID RUSSELL", cls="hero-title"),
-            P("Programmer", cls="hero-subtitle"),
-            Img(src="public/sun.png", alt="David with a bike", cls="hero-image"),
-            cls="hero-section"
-        ),
-        
-        # Left sidebar with feature boxes
-        Div(
+    slug, latest = next(iter(BLOG_POSTS.items()))
+    return create_layout(
+        "/",
+        Section(
             Div(
-                H2("About Me", cls="feature-title"),
-                P("In which I briefly describe the life and opinions of the eponymous David Russell.", cls="feature-description"),
-                A("Learn More", href="/about", cls="feature-link"),
-                cls="feature-box about-box",
+                P("Software / Systems / Applied AI", cls="eyebrow"),
+                H1("David Russell", cls="hero-title"),
+                P("I build software, design systems, and make tools that help people do both.", cls="hero-subtitle"),
+                Div(A("More about me", href="/about", cls="button-link"),
+                    A("Find me on GitHub ↗", href="https://github.com/russedavid", cls="text-link"), cls="actions"),
             ),
-            Div(
-                H2("Blog", cls="feature-title"),
-                A(
-                    H3(blog_preview_title),
-                    P(blog_preview_date),
-                    P(blog_preview_snippet + "..."),
-                    href=blog_preview_link,
-                    cls="blog-preview-link",
-                ),
-                A("View All Posts", href="/blog", cls="feature-link"),
-                cls="feature-box blog-box",
-            ),
-            Div(
-                H2("Tools", cls="feature-title"),
-                Ul(
-                    A(Li("Air Quality Checker"), href="/tools#air-quality-checker"),
-                    A(Li("Hotdog vs Hamburger Classifier"), href="/tools#hotdog-vs-hamburger-classifier"),
-                    cls="tools-list"
-                ),
-                A("View All Tools", href="/tools", cls="feature-link"),
-                cls="feature-box tools-box",
-            ),
-            cls="sidebar-left"
+            Figure(Img(src="/public/sun.png", alt="David Russell outdoors", cls="hero-image", width=315, height=335), cls="hero-portrait"),
+            cls="hero-section",
         ),
-        
-        # Social cards - bottom middle/right
-        Div(
-            A(
-                Img(src="public/avatar.jpg", cls="social-image"),
-                Div(
-                    H3("GitHub", cls="social-title"),
-                    P("Check out my code repositories", cls="social-description"),
-                ),
-                href="https://github.com/russedavid",
-                cls="social-card",
-            ),
-            A(
-                Img(src="public/withbike.png", cls="social-image"),
-                Div(
-                    H3("LinkedIn", cls="social-title"),
-                    P("Connect with me professionally", cls="social-description"),
-                ),
-                href="https://www.linkedin.com/in/davidrussellengineer/",
-                cls="social-card",
-            ),
-            A(
-                Img(src="public/turbo.jpg", cls="social-image"),
-                Div(
-                    H3("Twitter", cls="social-title"),
-                    P("Follow my thoughts and updates", cls="social-description"),
-                ),
-                href="https://twitter.com/davidrusselldev",
-                cls="social-card",
-            ),
-            A(
-                Img(src="public/hos.png", cls="social-image"),
-                Div(
-                    H3("High Order Software", cls="social-title"),
-                    P("Visit my consulting business homepage", cls="social-description"),
-                ),
-                href="https://hos.net",
-                cls="social-card",
-            ),
-            cls="social-section"
+        Section(
+            P("A few other interests", cls="eyebrow"),
+            Div(
+                Div(P("From the blog", cls="blog-date"), H3(A(latest["title"], href=f"/blog/{slug}")),
+                    P(latest["snippet"]), A("All writing →", href="/blog", cls="text-link")),
+                Div(P("Small tools & experiments", cls="blog-date"), H3("Useful. Occasionally curious."),
+                    Ul(Li(A("Air Quality Checker", href="/tools#air-quality-checker")),
+                       Li(A("Hotdog vs Hamburger Classifier", href="/tools#hotdog-vs-hamburger-classifier")), cls="tools-list"),
+                    A("All tools →", href="/tools", cls="text-link")),
+                cls="interest-grid",
+            ), cls="interests",
         ),
-        cls="homepage-container"
     )
-    return create_layout(request.url.path, content)
 
 
 @rt("/about")
 def about(request):
     content = Div(
-        H1("ABOUT ME"),
+        P("Beyond the code", cls="eyebrow"),
+        H1("About me"),
         Div(
             P("In addition to writing code, designing systems, and building tools that make the aforementioned easier, I:"),
             Ul(
@@ -184,7 +118,8 @@ def about(request):
 @rt("/tools")
 def tools(request):
     content = Div(
-        H1("TOOLS"),
+        P("Small tools & experiments", cls="eyebrow"),
+        H1("Tools"),
         Div(
             H2("Air Quality Checker", cls="work-title", id="air-quality-checker"),
             Form(
@@ -270,13 +205,14 @@ def blog_post(request):
         P(post["date"], cls="blog-date"),
         Div(post["content"], cls="work-section"),
     )
-    return create_layout(request.url.path, content)
+    return create_layout(request.url.path, Div(content, cls="reading-page"), title=post["title"], description=post["snippet"])
 
 
 @rt("/blog")
 def blog(request):
     content = Div(
-        H1("BLOG"),
+        P("Notes on software and other things", cls="eyebrow"),
+        H1("Writing"),
         *[
             A(
                 H2(post["title"], cls="blog-title"),
