@@ -14,10 +14,12 @@ app = FastHTML(
         Script("try { document.documentElement.dataset.theme = localStorage.getItem('theme') === 'dark' ? 'dark' : 'light'; } catch {}"),
         Link(rel="stylesheet", href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.min.css"),
         css,
+        Link(rel="icon", href="/public/favicon.svg", type="image/svg+xml"),
         Script(src="/public/site.js", defer=True),
     ),
     htmx4=True,
     surreal=False,
+    canonical=False,
     sess_cls=None,
     secret_key="sessions-disabled",
     htmlkw={"lang": "en", "data-theme": "light"},
@@ -47,10 +49,20 @@ def create_nav(current_path):
 
 
 def create_layout(current_path, *content, title=None, description=None):
+    title = title or {"/about": "About", "/tools": "Tools", "/blog": "Writing"}.get(current_path)
     page_title = f"{title} | David Russell" if title else "David Russell — Software engineer"
+    summary = description or "Software, systems, and applied AI. Projects and writing by David Russell."
+    canonical = "https://davidrussell.dev" + current_path
     return (
         Title(page_title),
-        Meta(name="description", content=description or "Software, systems, and applied AI. Projects and writing by David Russell."),
+        Meta(name="description", content=summary),
+        Link(rel="canonical", href=canonical),
+        Meta(property="og:title", content=page_title),
+        Meta(property="og:description", content=summary),
+        Meta(property="og:type", content="article" if current_path.startswith("/blog/") else "website"),
+        Meta(property="og:url", content=canonical),
+        Meta(property="og:image", content="https://davidrussell.dev/public/avatar.jpg"),
+        Meta(name="twitter:card", content="summary"),
         A("Skip to content", href="#main-content", cls="skip-link"),
         create_nav(current_path),
         Main(*content, id="main-content", cls="site-main site-width"),
@@ -259,6 +271,20 @@ def blog(request):
         ],
     )
     return create_layout(request.url.path, content)
+
+
+@rt("/robots.txt")
+def robots():
+    return Response("User-agent: *\nAllow: /\nDisallow: /check-aqi\nDisallow: /projects/otsc/walkthrough/\nSitemap: https://davidrussell.dev/sitemap.xml\n", media_type="text/plain")
+
+
+@rt("/sitemap.xml")
+def sitemap():
+    from xml.sax.saxutils import escape
+    paths = ["/", "/projects", "/projects/frontline", "/projects/otsc", "/about", "/tools", "/blog"]
+    paths.extend(f"/blog/{slug}" for slug in BLOG_POSTS)
+    urls = "".join(f"<url><loc>{escape('https://davidrussell.dev' + path)}</loc></url>" for path in paths)
+    return Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls + '</urlset>', media_type="application/xml")
 
 
 if __name__ == "__main__":

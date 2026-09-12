@@ -226,3 +226,13 @@ BASE_STYLES += """
     .section-heading h2 { font-size: 1.7rem; }
 }
 """
+
+BASE_STYLES += """
+/* Align the previews and reading links in the two-column project grid. */
+.project-card { display: flex; flex-direction: column; }
+.project-card > .project-preview { min-height: 338px; }
+.project-copy { display: flex; flex-direction: column; flex: 1; }
+.project-copy > .text-link { margin-top: auto; align-self: flex-start; }
+.project-copy .project-stack { margin-bottom: 1.3rem; }
+@media (max-width: 700px) { .project-card > .project-preview { min-height: 0; } }
+"""
