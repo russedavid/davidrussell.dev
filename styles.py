@@ -129,3 +129,61 @@ blockquote { border-left-color: var(--accent); color: var(--text); }
 }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
 """
+
+BASE_STYLES += """
+.project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem; }
+.project-card { padding: 0; margin: 0; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); box-shadow: none; overflow: hidden; }
+.project-copy { padding: 1.6rem; }
+.project-copy h3 { font-size: 1.9rem; margin-bottom: .6rem; }
+.project-copy h3 a { text-decoration: none; color: var(--text); }
+.project-copy h3 a:hover { color: var(--accent); }
+.project-status { font-size: .7rem; color: var(--accent); font-weight: 600; margin-bottom: .7rem; }
+.project-tagline { color: var(--text); font-size: 1.03rem; margin-bottom: .65rem; }
+.project-description { font-size: .93rem; color: var(--muted); }
+.project-stack { font-size: .7rem; color: var(--muted); margin-top: 1.2rem; }
+.project-preview { padding: 1.3rem; background: var(--highlight); min-height: 282px; border-bottom: 1px solid var(--border); }
+.preview-bar { display: flex; justify-content: space-between; gap: 1rem; align-items: center; border-bottom: 1px solid var(--strong-border); padding-bottom: .6rem; margin-bottom: .7rem; }
+.preview-brand { font-size: .65rem; font-weight: 600; letter-spacing: .15em; }
+.preview-label { font-size: .65rem; color: var(--muted); }
+.report-paper { background: var(--surface); padding: .9rem 1.1rem; border: 1px solid var(--border); }
+.report-heading { font-family: 'Source Serif', Georgia, serif; font-size: 1.1rem; margin: 0 0 .7rem; }
+.report-line { display: grid; grid-template-columns: 85px 1fr; gap: .7rem; margin-block: .6rem; align-items: baseline; }
+.report-line p { font-size: .78rem; margin: 0; }
+.state-label { color: var(--success); font-size: .55rem; letter-spacing: .07em; font-weight: 600; }
+.preview-footnote { margin: .9rem 0 0; font-size: .6rem; color: var(--muted); }
+.back-link { font-size: .8rem; text-decoration: none; }
+.project-hero { padding-block: 2.5rem 3rem; max-width: 900px; }
+.project-hero h1 { font-size: clamp(2.5rem, 5.4vw, 4rem); }
+.project-lede { font-size: 1.2rem; line-height: 1.6; color: var(--muted); max-width: 780px; }
+.example-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; padding-block: 2rem 3rem; border-top: 1px solid var(--border); }
+.example-grid .project-preview { border: 1px solid var(--border); border-radius: 5px; }
+.example-grid blockquote { padding: .2rem 0 .2rem 1.3rem; margin-block: 1.5rem; font-family: 'Source Serif', Georgia, serif; font-size: 1.25rem; }
+.case-section { padding-block: 2.7rem; border-top: 1px solid var(--border); }
+.case-section > p:not(.eyebrow) { max-width: 800px; }
+.case-section h2 { margin-bottom: 1.5rem; }
+.workflow-list { counter-reset: steps; padding: 0; list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 1.4rem 3rem; }
+.workflow-list li { position: relative; counter-increment: steps; padding-left: 2.5rem; font-size: .95rem; color: var(--muted); }
+.workflow-list li::before { content: '0' counter(steps); position: absolute; left: 0; top: 0; font-size: .8rem; color: var(--accent); }
+.workflow-list strong { display: block; color: var(--text); }
+.decision-row { display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; border-bottom: 1px solid var(--border); padding-block: 1.4rem; }
+.decision-row:last-child { border-bottom: 0; }
+.decision-row h3 { margin: 0; font-size: 1.4rem; }
+.decision-row p { margin: 0; color: var(--muted); }
+.muted { color: var(--muted); }
+.small-note { font-size: .8rem; color: var(--muted); }
+.project-outro { background: var(--highlight); padding: 2.5rem; border-radius: 5px; margin-top: 1rem; }
+.project-outro h2 { max-width: 750px; }
+.project-index-intro { max-width: 750px; margin-bottom: 2.8rem; }
+.project-index-intro p:not(.eyebrow) { color: var(--muted); font-size: 1.15rem; }
+@media (max-width: 700px) {
+    .project-grid,.example-grid,.workflow-list { grid-template-columns: 1fr; }
+    .project-copy { padding: 1.3rem; }
+    .project-hero { padding-block: 2rem; }
+    .example-grid { gap: 1.4rem; }
+    .decision-row { grid-template-columns: 1fr; gap: .7rem; }
+    .project-outro { padding: 1.5rem; }
+    .project-preview { padding: 1rem; }
+    .nav-links { gap: .8rem; }
+    .section-heading h2 { font-size: 2rem; }
+}
+"""

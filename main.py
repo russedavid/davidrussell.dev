@@ -6,6 +6,7 @@ from starlette.concurrency import run_in_threadpool
 from air_quality import handle_aqi_request
 from styles import BASE_STYLES
 from blogs import BLOG_POSTS
+from projects import PROJECTS, project_card, project_section, frontline_page
 css = Style(BASE_STYLES)
 PUBLIC = Path(__file__).resolve().parent / "public"
 app = FastHTML(
@@ -35,7 +36,7 @@ def create_nav(current_path):
         Nav(
             A("dr.", href="/", cls="brand", aria_label="David Russell home"),
             Div(
-                *(nav_item(label, url, current_path) for label, url in [("Home", "/"), ("About", "/about"), ("Tools", "/tools"), ("Blog", "/blog")]),
+                *(nav_item(label, url, current_path) for label, url in [("Home", "/"), ("Projects", "/projects"), ("About", "/about"), ("Tools", "/tools"), ("Blog", "/blog")]),
                 Button(Span("◐", aria_hidden="true"), Span("Dark", data_theme_label=""),
                        id="theme-toggle", cls="theme-toggle", type="button", aria_label="Use dark theme", aria_pressed="false"),
                 cls="nav-links",
@@ -76,12 +77,13 @@ def home(request):
                 P("Software / Systems / Applied AI", cls="eyebrow"),
                 H1("David Russell", cls="hero-title"),
                 P("I build software, design systems, and make tools that help people do both.", cls="hero-subtitle"),
-                Div(A("More about me", href="/about", cls="button-link"),
+                Div(A("Explore my work ↓", href="#selected-work", cls="button-link"),
                     A("Find me on GitHub ↗", href="https://github.com/russedavid", cls="text-link"), cls="actions"),
             ),
             Figure(Img(src="/public/sun.png", alt="David Russell outdoors", cls="hero-image", width=315, height=335), cls="hero-portrait"),
             cls="hero-section",
         ),
+        project_section(),
         Section(
             P("A few other interests", cls="eyebrow"),
             Div(
@@ -95,6 +97,22 @@ def home(request):
             ), cls="interests",
         ),
     )
+
+
+@rt("/projects")
+def projects_index(request):
+    return create_layout(
+        "/projects",
+        Div(P("Selected work", cls="eyebrow"), H1("Software with a job to do."),
+            P("Personal projects in applied AI: the product, the engineering decisions, and the evidence behind them."), cls="project-index-intro"),
+        Div(*(project_card(project) for project in PROJECTS), cls="project-grid"),
+        title="Projects",
+    )
+
+
+@rt("/projects/frontline")
+def frontline(request):
+    return create_layout(request.url.path, *frontline_page(), title="Frontline", description=PROJECTS[0]["description"])
 
 
 @rt("/about")
