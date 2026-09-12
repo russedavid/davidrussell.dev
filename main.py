@@ -1,10 +1,9 @@
 # main.py
 from fasthtml.common import *
-from datetime import datetime, timedelta
-from collections import Counter, defaultdict
 from pathlib import Path
-import requests
 from starlette.staticfiles import StaticFiles
+from starlette.concurrency import run_in_threadpool
+from air_quality import handle_aqi_request
 from styles import BASE_STYLES
 from blogs import BLOG_POSTS
 css = Style(BASE_STYLES)
@@ -19,102 +18,6 @@ app = FastHTML(
 )
 app.mount("/public", StaticFiles(directory=PUBLIC), name="public")
 rt = app.route
-
-
-def calculate_aqi_stats(hours_info):
-    """Process AQI data and return stats"""
-    total_aqi = 0
-    count = 0
-    dominant_pollutants = Counter()
-    pollutant_details = defaultdict(list)
-    local_offset = timedelta(hours=-5)
-
-    for hour in hours_info:
-        if not hour.get("indexes"):
-            continue
-
-        utc_time = datetime.strptime(hour["dateTime"], "%Y-%m-%dT%H:%M:%SZ")
-        local_time = utc_time + local_offset
-
-        if 0 <= local_time.hour < 25:
-            for index in hour.get("indexes"):
-                aqi = index.get("aqi", 0)
-                total_aqi += aqi
-                count += 1
-
-                if dominant_pollutant := index.get("dominantPollutant"):
-                    dominant_pollutants[dominant_pollutant] += 1
-
-            # Process pollutant concentrations
-            for pollutant in hour.get("pollutants", []):
-                if "concentration" in pollutant and (code := pollutant.get("code")):
-                    pollutant_details[code].append(pollutant["concentration"]["value"])
-
-    # Calculate averages
-    average_aqi = total_aqi / count if count > 0 else 0
-    pollutant_averages = {
-        code: sum(values) / len(values) for code, values in pollutant_details.items()
-    }
-
-    return {
-        "average_aqi": average_aqi,
-        "dominant_pollutant": dominant_pollutants.most_common(1),
-        "pollutant_averages": pollutant_averages,
-    }
-
-
-def fetch_aqi_data(api_key, lat, lon):
-    """Fetch all pages of AQI data"""
-    url = f"https://airquality.googleapis.com/v1/history:lookup?key={api_key}"
-    data = {
-        "hours": 720,
-        "location": {"latitude": lat, "longitude": lon},
-        "pageSize": 100,
-        "extraComputations": ["POLLUTANT_CONCENTRATION"],
-    }
-
-    all_hours_info = []
-    next_page_token = None
-
-    while True:
-        if next_page_token:
-            data["pageToken"] = next_page_token
-
-        try:
-            response = requests.post(url, json=data).json()
-            if "error" in response:
-                raise ValueError(
-                    f"API Error: {response['error'].get('message', 'Unknown error')}"
-                )
-
-            if hours_info := response.get("hoursInfo", []):
-                all_hours_info.extend(hours_info)
-
-            if not (next_page_token := response.get("nextPageToken")):
-                break
-
-        except requests.RequestException as e:
-            raise ValueError(f"Request failed: {str(e)}")
-
-    return calculate_aqi_stats(all_hours_info)
-
-
-def handle_aqi_request(api_key, coordinates_text):
-    """Process multiple coordinates and return results"""
-    results = []
-
-    for line in coordinates_text.strip().split("\n"):
-        if not line.strip():
-            continue
-
-        try:
-            lat, lon = map(float, line.strip().split(","))
-            result = fetch_aqi_data(api_key, lat, lon)
-            results.append({"coordinates": (lat, lon), "data": result})
-        except (ValueError, IndexError) as e:
-            results.append({"coordinates": (line.strip(),), "error": str(e)})
-
-    return results
 
 
 def nav_item(text, href, current_path):
@@ -285,23 +188,27 @@ def tools(request):
         Div(
             H2("Air Quality Checker", cls="work-title", id="air-quality-checker"),
             Form(
+                Label("Coordinates (latitude, longitude)", fr="coordinates"),
                 Textarea(
-                    id="coordinates",
+                    id="coordinates", name="coordinates", required=True,
                     placeholder="Enter coordinates (lat,lon) - one per line\nExample:\n30.5002452018897,-97.7907459171229",
                     rows=10,
                     cls="w-full p-2",
                 ),
+                Label("Google Air Quality API key", fr="api_key"),
                 Input(
-                    id="api_key",
+                    id="api_key", name="api_key", required=True, autocomplete="off",
                     type="password",
                     placeholder="Google Maps API Key",
                     cls="w-full p-2",
                 ),
                 Button("Check Air Quality", type="submit", cls="mt-4"),
+                method="post", action="/check-aqi",
                 hx_post="/check-aqi",
+                hx_disabled_elt="find button",
                 hx_target="#results",
             ),
-            Div(id="results", cls="work-section"),
+            Div(id="results", aria_live="polite"),
             cls="work-section",
         ),
         Div(
@@ -309,6 +216,7 @@ def tools(request):
             P("A fine-tuned ResNet model for food classification", cls="work-subtitle"),
             Iframe(
                 src="https://davidrussell-hamburger-or-hotdog.hf.space",
+                title="Hotdog versus hamburger classifier", loading="lazy",
                 style="width:100%; height:600px; border:0; border-radius: 8px; margin:2rem 0;",
             ),
             cls="work-section",
@@ -317,50 +225,37 @@ def tools(request):
     return create_layout(request.url.path, content)
 
 
+def aqi_result(result):
+    heading = H3("Location: " + ", ".join(map(str, result["coordinates"])))
+    if "error" in result:
+        return Div(heading, P(result["error"], role="alert"), cls="work-section error-message")
+    data = result["data"]
+    if data["average_aqi"] is None:
+        return Div(heading, P("No air-quality readings were returned for this location."), cls="work-section")
+    return Div(
+        heading,
+        P(f"Average AQI: {data['average_aqi']:.2f}"),
+        P("Most common dominant pollutant: " + (data["dominant_pollutant"][0][0] if data["dominant_pollutant"] else "Not reported")),
+        H4("Average pollutant concentrations"),
+        Ul(*(Li(f"{name}: {value:.2f}") for name, value in data["pollutant_averages"].items()))
+        if data["pollutant_averages"] else P("No concentrations were reported."),
+        cls="work-section",
+    )
+
+
 @rt("/check-aqi")
 async def post(request):
     form = await request.form()
-    api_key = form.get("api_key")
-    coordinates = form.get("coordinates")
-
-    try:
-        results = handle_aqi_request(api_key, coordinates)
-        return Div(
-            *[
-                Div(
-                    H3(
-                        f"Location: {result['coordinates'][0]}, {result['coordinates'][1]}"
-                    ),
-                    P(f"Average AQI: {result['data']['average_aqi']:.2f}"),
-                    *(
-                        []
-                        if "error" in result
-                        else [
-                            P(
-                                f"Most Common Pollutant: {result['data']['dominant_pollutant'][0][0]} "
-                                f"(Count: {result['data']['dominant_pollutant'][0][1]})"
-                            ),
-                            H4("Average Pollutant Concentrations:"),
-                            Ul(
-                                *[
-                                    Li(f"{pollutant}: {avg:.2f}")
-                                    for pollutant, avg in result["data"][
-                                        "pollutant_averages"
-                                    ].items()
-                                ]
-                            ),
-                        ]
-                    ),
-                    cls="mt-4 p-4 border work-section",
-                )
-                for result in results
-            ]
-        )
-    except Exception as e:
-        return Div(
-            P(f"Error: {str(e)}", cls="text-red-600"),
-            cls="mt-4 p-4 border border-red-600",
-        )
+    api_key = str(form.get("api_key", "")).strip()
+    coordinates = str(form.get("coordinates", "")).strip()
+    if not api_key or not coordinates:
+        output = Div(P("Enter an API key and at least one latitude,longitude pair.", role="alert"), cls="error-message")
+    else:
+        results = await run_in_threadpool(handle_aqi_request, api_key, coordinates)
+        output = Div(*(aqi_result(result) for result in results))
+    if request.headers.get("hx-request"):
+        return output
+    return create_layout("/tools", H1("Air quality results"), output, A("Back to tools", href="/tools"))
 
 
 @rt("/blog/{slug}")
