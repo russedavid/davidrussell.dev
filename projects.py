@@ -24,8 +24,9 @@ def frontline_preview():
 
 
 def project_card(project):
+    preview = {"frontline": frontline_preview, "otsc": otsc_preview, "career-workbench": career_preview}
     return Article(
-        frontline_preview() if project["slug"] == "frontline" else otsc_preview(),
+        preview[project["slug"]](),
         Div(P(project["status"], cls="project-status"), H3(A(project["title"], href=f"/projects/{project['slug']}")),
             P(project["tagline"], cls="project-tagline"), P(project["description"], cls="project-description"),
             P(project["stack"], cls="project-stack"), A("Explore the project →", href=f"/projects/{project['slug']}", cls="text-link"),
@@ -209,4 +210,131 @@ def otsc_page(step=0):
                 A("Explore the MIDI firmware ↗", href="https://github.com/russedavid/k0-max-midi", cls="text-link"), cls="actions"),
             cls="project-outro",
         ),
+    )
+
+CAREER_WORKBENCH = {
+    "slug": "career-workbench", "title": "Career Workbench", "status": "Local web app · Source available",
+    "tagline": "A good resume starts before the writing.",
+    "description": "Discover overlooked experience, explore directions, and develop profiles whose claims lead back to the original evidence.",
+    "stack": "Agentic discovery / Persistent evidence / Document review",
+}
+PROJECTS.append(CAREER_WORKBENCH)
+CAREER_REPO = "https://github.com/russedavid/career-workbench"
+
+
+def career_preview():
+    return Div(
+        Div(Span("CAREER WORKBENCH", cls="preview-brand"), Span("Fictional example", cls="preview-label"), cls="preview-bar"),
+        Div(P("A contribution, with its context.", cls="report-heading"),
+            Blockquote('“I helped keep the volunteer schedule up to date. The program lead owned it.”'),
+            P("Supported the weekly volunteer schedule alongside the program lead.", cls="career-example-claim"),
+            P("Shared credit preserved · Original account linked", cls="preview-footnote"), cls="career-paper"),
+        cls="project-preview career-preview", aria_label="Fictional career evidence with shared ownership preserved in the resulting claim",
+    )
+
+
+CAREER_STEPS = (
+    {
+        "label": "1. Original account", "status": "Source recorded", "version": "Working profile · draft 1",
+        "source": "I coordinated the weekly volunteer schedule for the community program.",
+        "claim": "Coordinated the community program’s weekly volunteer schedule.",
+        "decision": "Keep the account and its source link. No measured time saving, budget ownership or program size has been supplied.",
+        "note": "A source link records where a claim came from; it does not independently verify the recollection.",
+    },
+    {
+        "label": "2. Correction", "status": "Dependent draft needs review", "version": "Draft 1 · historical",
+        "source": "I helped keep the schedule up to date. The program lead owned it.",
+        "claim": "Coordinated the community program’s weekly volunteer schedule.",
+        "decision": "Save the correcting words, retire the overbroad claim, and flag profiles that use it. Preserve the earlier PDF and the account it was based on.",
+        "note": "A correction changes the working record; it does not silently rewrite an old export.",
+    },
+    {
+        "label": "3. Revised profile", "status": "Shared contribution retained", "version": "Working profile · draft 2",
+        "source": "I helped keep the schedule up to date. The program lead owned it.",
+        "claim": "Supported the weekly volunteer schedule alongside the program lead.",
+        "decision": "Use the narrower claim in a new draft. Review the wording, inspect the rendered page, and retain both document versions with their source snapshots.",
+        "note": "Technical validation and editorial judgment remain separate. A clean PDF can still contain weak copy.",
+    },
+)
+
+
+def career_walkthrough(step=0):
+    state = CAREER_STEPS[step]
+    return Div(
+        Div(*(A(item["label"], href=f"/projects/career-workbench?step={index}#walkthrough",
+                hx_get=f"/projects/career-workbench/walkthrough/{index}", hx_target="#career-walkthrough", hx_swap="outerHTML",
+                cls="walkthrough-step selected" if index == step else "walkthrough-step",
+                aria_current="step" if index == step else None) for index, item in enumerate(CAREER_STEPS)),
+            cls="walkthrough-controls", role="group", aria_label="Fictional evidence and correction stages"),
+        Div(
+            Div(P("ORIGINAL WORDS", cls="eyebrow"), Blockquote(state["source"]),
+                H3(state["status"]), P(state["decision"]), cls="sample-context"),
+            Div(Div(Span(state["version"], cls="preview-brand"), cls="preview-bar"),
+                P(state["claim"], cls="career-example-claim" + (" historical-claim" if step == 1 else "")),
+                P(state["note"], cls="small-note"), cls="sample-artifact career-artifact"),
+            cls="walkthrough-body", aria_live="polite",
+        ), id="career-walkthrough", cls="walkthrough",
+    )
+
+
+def career_page(step=0):
+    return (
+        A("← All projects", href="/projects", cls="back-link"),
+        Section(
+            P("Career Workbench / Local web application", cls="eyebrow"),
+            H1("A good resume starts before the writing."),
+            P("The useful work is often missing from the first account: an unwritten responsibility, a difficult handoff, a decision that helped someone else deliver. Career Workbench helps recover that experience, understand what it supports, and turn it into a clear professional story.", cls="project-lede"),
+            Div(A("Get the local app ↗", href=CAREER_REPO + "#run-the-localhost-ui", cls="button-link"),
+                A("Read the usage guide ↗", href=CAREER_REPO + "/blob/main/docs/usage.md", cls="text-link"), cls="actions"),
+            P("Python · FastHTML · HTMX · SQLite · Codex app-server · MCP · Typst", cls="project-stack"),
+            cls="project-hero",
+        ),
+        Section(
+            P("THE PRODUCT", cls="eyebrow"), H2("One working record. Several ways forward."),
+            P("Start with notes, a resume or a conversation. The agent can ask a useful follow-up, organize evidence, compare career directions, propose development work, or draft a profile for a particular audience. Direct editors use the same records, so a precise correction does not depend on another model call."),
+            Div(
+                Div(Span("01", cls="flow-number"), Strong("Discover"), P("Recover overlooked work through short, adaptive interviews.")),
+                Div(Span("02", cls="flow-number"), Strong("Make sense of it"), P("Separate contribution, shared credit, outcomes and unknowns.")),
+                Div(Span("03", cls="flow-number"), Strong("Choose a direction"), P("Compare evidence gaps and plan work that demonstrates useful capabilities.")),
+                Div(Span("04", cls="flow-number"), Strong("Compose and review"), P("Develop distinct profiles, inspect their sources and check the actual PDFs.")),
+                cls="context-flow",
+            ), cls="case-section",
+        ),
+        Section(
+            P("FOLLOW THE EVIDENCE", cls="eyebrow"), H2("A correction should travel as far as the claim."),
+            P("Step through a fictional account, its correction and a revised profile. The important behavior is what happens to the records and drafts that depend on it."),
+            career_walkthrough(step),
+            P("Fixed, self-authored fictional example. This illustration contains no personal career records and makes no model calls.", cls="small-note"),
+            cls="case-section", id="walkthrough",
+        ),
+        Section(
+            P("ENGINEERING DECISIONS", cls="eyebrow"), H2("Let the agent reason. Make the record dependable."),
+            detail_row("A frontier model inside a bounded workflow", "Codex supplies the reasoning and tool loop. Workspace-bound MCP tools handle records, corrections and rendering. The host disables general shell and filesystem tools; each conversation resumes its own thread."),
+            detail_row("Facts keep their qualifications", "Original sources remain immutable. Claims retain quotation spans, ownership and limitations. A correction retires the old claim and flags dependent profiles and planning records, while historical exports retain their snapshots."),
+            detail_row("Large histories stay navigable", "The agent starts with an overview and retrieves selected records in bounded pages. It can inspect a claim and its exact source without loading an entire career archive into every response."),
+            detail_row("The rendered page is part of the workflow", "Typst produces tagged PDFs. Checks cover text, metadata, links, fonts, page limits and short wrapped lines; optional bottom-fill and independent PDF/UA validation make additional requirements explicit."),
+            detail_row("Progress survives the page", "Background jobs persist visible events, results and failures. Refreshing the browser does not start another model call. Stop requests interrupt model work while retaining changes already saved."),
+            cls="case-section",
+        ),
+        Section(
+            P("QUALITY", cls="eyebrow"), H2("Passing a check is a beginning."),
+            P("Automated tests exercise source identity, attribution boundaries, corrections, isolated workspaces and document output. Browser checks cover actual forms and review flows in Chromium and Firefox. Separate live exercises use fictional accounts to inspect the agent’s choices and resulting records."),
+            P("A quote can be present in a source without supporting the proposed claim. A valid PDF can still tell an unconvincing story. Editorial review therefore considers relevance, coherence, attribution, scope, copy and geometry separately."),
+            Div(A("Read the verification notes ↗", href=CAREER_REPO + "/blob/main/docs/web-verification.md", cls="text-link"),
+                A("Explore the implementation ↗", href=CAREER_REPO + "/blob/main/docs/design.md", cls="text-link"), cls="actions"),
+            cls="case-section",
+        ),
+        Section(
+            P("USE IT LOCALLY", cls="eyebrow"), H2("Your browser is the interface."),
+            P("With the prerequisites installed—including an already authenticated Codex CLI—clone the repository and start the web app:"),
+            Pre(Code("git clone https://github.com/russedavid/career-workbench.git\ncd career-workbench\nuv sync --frozen\nuv run career-workbench web"), cls="setup-code"),
+            P("Open http://127.0.0.1:5010. Create a workspace, add source material, and start a conversation. The README covers dependencies and model selection; the usage guide walks through discovery, drafting, corrections and PDF review."),
+            P("Records stay in a private local directory outside the code checkout. Agent conversations use the saved Codex CLI login and send relevant context to the selected model. This is a localhost application, not a hosted public demo.", cls="small-note"),
+            cls="case-section",
+        ),
+        Div(H2("Start with the work. Keep the evidence."),
+            P("Explore the fictional examples or bring your own material into a private workspace."),
+            Div(A("View the repository ↗", href=CAREER_REPO, cls="button-link"),
+                A("Read the usage guide ↗", href=CAREER_REPO + "/blob/main/docs/usage.md", cls="text-link"), cls="actions"),
+            cls="project-outro"),
     )

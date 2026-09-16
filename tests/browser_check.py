@@ -20,7 +20,7 @@ def check(url, output=None):
                 page.route("https://davidrussell-hamburger-or-hotdog.hf.space/**", lambda route: route.fulfill(body="External classifier placeholder"))
                 errors = []
                 page.on("pageerror", lambda error: errors.append(str(error)))
-                for name, path in (("home", "/"), ("projects", "/projects"), ("frontline", "/projects/frontline"), ("otsc", "/projects/otsc")):
+                for name, path in (("home", "/"), ("projects", "/projects"), ("frontline", "/projects/frontline"), ("career", "/projects/career-workbench"), ("otsc", "/projects/otsc")):
                     page.goto(url + path, wait_until="networkidle")
                     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (label, path)
                     assert page.locator("h1").count() == 1
@@ -34,6 +34,13 @@ def check(url, output=None):
                 page.get_by_role("link", name="3. No new information").click()
                 page.get_by_text("Current output retained", exact=True).wait_for()
                 assert before == page.locator(".sample-code").inner_text()
+                page.goto(url + "/projects/career-workbench")
+                page.get_by_role("link", name="2. Correction", exact=True).click()
+                page.get_by_text("Dependent draft needs review", exact=True).wait_for()
+                assert page.locator(".historical-claim").count() == 1
+                page.get_by_role("link", name="3. Revised profile", exact=True).click()
+                page.get_by_text("Shared contribution retained", exact=True).wait_for()
+                assert "alongside the program lead" in page.locator(".career-artifact").inner_text()
                 page.get_by_role("button", name="Use dark theme").click()
                 page.goto(url + "/tools", wait_until="domcontentloaded")
                 assert page.evaluate("document.documentElement.dataset.theme") == "dark"
@@ -51,6 +58,9 @@ def check(url, output=None):
             page.goto(url + "/projects/otsc")
             page.get_by_role("link", name="2. New requirement").click()
             assert page.get_by_text("Proposal revised", exact=True).is_visible()
+            page.goto(url + "/projects/career-workbench")
+            page.get_by_role("link", name="2. Correction", exact=True).click()
+            assert page.get_by_text("Dependent draft needs review", exact=True).is_visible()
             context.close()
             print("No-JavaScript walkthrough navigation passed")
         finally:

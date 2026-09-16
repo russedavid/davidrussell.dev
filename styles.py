@@ -131,7 +131,7 @@ blockquote { border-left-color: var(--accent); color: var(--text); }
 """
 
 BASE_STYLES += """
-.project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.6rem; }
+.project-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 1.6rem; }
 .project-card { padding: 0; margin: 0; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); box-shadow: none; overflow: hidden; }
 .project-copy { padding: 1.6rem; }
 .project-copy h3 { font-size: 1.9rem; margin-bottom: .6rem; }
@@ -228,6 +228,15 @@ BASE_STYLES += """
 """
 
 BASE_STYLES += """
+.career-paper blockquote { font: 1rem/1.45 'Source Serif', Georgia, serif; margin: .8rem 0; padding: .3rem 0 .3rem .8rem; }
+.career-example-claim { font: 1.1rem/1.5 'Source Serif', Georgia, serif; color: var(--text); }
+.career-paper .career-example-claim { font-size: .88rem; }
+.career-artifact { padding: 1.5rem; }
+.career-artifact .career-example-claim { padding-block: 1.1rem; }
+.historical-claim { text-decoration: line-through; color: var(--muted); }
+.setup-code { padding: 1.5rem; background: var(--code-bg); border: 1px solid var(--border); white-space: pre-wrap; overflow-wrap: anywhere; }
+.setup-code code { white-space: pre-wrap; overflow-wrap: anywhere; }
+
 /* Align the previews and reading links in the two-column project grid. */
 .project-card { display: flex; flex-direction: column; }
 .project-card > .project-preview { min-height: 338px; }

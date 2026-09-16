@@ -20,6 +20,22 @@ class SiteTests(unittest.TestCase):
         for path in ("/.sesskey", "/main.py", "/requirements.txt", "/public/%2e%2e/main.py"):
             self.assertEqual(self.client.get(path).status_code, 404)
 
+    def test_career_project_navigation_and_fictional_walkthrough(self):
+        response = self.client.get("/projects/career-workbench")
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("A good resume starts before the writing", response.text)
+        self.assertIn("https://github.com/russedavid/career-workbench", response.text)
+        self.assertIn("authenticated Codex CLI", response.text)
+        self.assertIn("Fixed, self-authored fictional example", response.text)
+        for path in ("/", "/projects", "/sitemap.xml"):
+            self.assertIn("/projects/career-workbench", self.client.get(path).text)
+        fragment = self.client.get("/projects/career-workbench/walkthrough/1", headers={"HX-Request": "true"})
+        self.assertIn("Dependent draft needs review", fragment.text)
+        self.assertNotIn("<html", fragment.text)
+        self.assertEqual(self.client.get("/projects/career-workbench/walkthrough/9").status_code, 404)
+        self.assertIn("Shared contribution retained", self.client.get("/projects/career-workbench?step=2").text)
+        self.assertIn("Source recorded", self.client.get("/projects/career-workbench?step=bad").text)
+
     def test_form_submission_missing_and_invalid_values_do_not_call_provider(self):
         with patch("air_quality.requests.post") as call:
             for values in ({}, {"api_key": "test-only", "coordinates": "nan,1\n91,2\nnot coordinates"}):

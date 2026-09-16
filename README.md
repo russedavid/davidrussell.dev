@@ -38,6 +38,8 @@ The application has no session middleware. Static serving is restricted to `asse
 
 ## Project pages
 
+- **Career Workbench**: `/projects/career-workbench`, with the [source repository](https://github.com/russedavid/career-workbench), localhost usage, and a fixed fictional correction walkthrough. Its source records, conversations and generated documents stay in private workspaces.
+
 - **Frontline**: `/projects/frontline`, with the public demo, [source repository](https://github.com/russedavid/report-generator), a clearly labeled report illustration, and links to evaluation work.
 - **Over The Shoulder Coder**: `/projects/otsc`, with the [source repository](https://github.com/russedavid/over-the-shoulder), product story, and an interactive, fixed-example walkthrough. It is an illustration, not a running desktop app or live inference endpoint. Recorded evaluations remain private.
 
