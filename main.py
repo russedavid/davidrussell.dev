@@ -6,7 +6,7 @@ from starlette.concurrency import run_in_threadpool
 from air_quality import handle_aqi_request
 from styles import BASE_STYLES, THEME_SCRIPT
 from blogs import BLOG_POSTS
-from projects import PROJECTS, project_card, project_section, frontline_page, otsc_page, otsc_walkthrough, CAREER_WORKBENCH, career_page, career_walkthrough
+from projects import PROJECTS, project_card, project_section, frontline_page, otsc_page, otsc_walkthrough, CAREER_WORKBENCH, career_page, career_walkthrough, QWEN_TTRPG, QWEN_STEPS, qwen_page, qwen_walkthrough
 css = Style(BASE_STYLES)
 ASSETS = Path(__file__).resolve().parent / "assets"
 app = FastHTML(
@@ -215,6 +215,23 @@ def career_sample(step: int):
     return career_walkthrough(step)
 
 
+@rt("/projects/qwen-ttrpg")
+def qwen_ttrpg(request):
+    try:
+        step = int(request.query_params.get("step", "0"))
+    except ValueError:
+        step = 0
+    step = step if step in range(len(QWEN_STEPS)) else 0
+    return create_layout(request.url.path, *qwen_page(step), title="Qwen TTRPG", description=QWEN_TTRPG["description"])
+
+
+@rt("/projects/qwen-ttrpg/walkthrough/{step:int}")
+def qwen_sample(step: int):
+    if step not in range(len(QWEN_STEPS)):
+        raise HTTPException(404)
+    return qwen_walkthrough(step)
+
+
 @rt("/about")
 def about(request):
     content = Div(
@@ -346,13 +363,13 @@ def blog(request):
 
 @rt("/robots.txt")
 def robots():
-    return Response("User-agent: *\nAllow: /\nDisallow: /check-aqi\nDisallow: /projects/otsc/walkthrough/\nDisallow: /projects/career-workbench/walkthrough/\nSitemap: https://davidrussell.dev/sitemap.xml\n", media_type="text/plain")
+    return Response("User-agent: *\nAllow: /\nDisallow: /check-aqi\nDisallow: /projects/otsc/walkthrough/\nDisallow: /projects/career-workbench/walkthrough/\nDisallow: /projects/qwen-ttrpg/walkthrough/\nSitemap: https://davidrussell.dev/sitemap.xml\n", media_type="text/plain")
 
 
 @rt("/sitemap.xml")
 def sitemap():
     from xml.sax.saxutils import escape
-    paths = ["/", "/projects", "/projects/frontline", "/projects/otsc", "/projects/career-workbench", "/about", "/tools", "/blog"]
+    paths = ["/", "/projects", *(f"/projects/{project['slug']}" for project in PROJECTS), "/about", "/tools", "/blog"]
     paths.extend(f"/blog/{slug}" for slug in BLOG_POSTS)
     urls = "".join(f"<url><loc>{escape('https://davidrussell.dev' + path)}</loc></url>" for path in paths)
     return Response('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' + urls + '</urlset>', media_type="application/xml")

@@ -233,6 +233,17 @@ BASE_STYLES += """
 .career-paper .career-example-claim { font-size: .88rem; }
 .career-artifact { padding: 1.5rem; }
 .career-artifact .career-example-claim { padding-block: 1.1rem; }
+.model-paper { background: var(--surface); border: 1px solid var(--border); padding: 1rem; text-align: center; }
+.model-base-label { margin: 0; color: var(--muted); font-size: .7rem; }
+.model-size { display: block; font: 3.6rem/1.2 'Source Serif', Georgia, serif; color: var(--text); }
+.model-base-caption { margin: .2rem 0 1rem; font-size: .7rem; }
+.adapter-labels { display: flex; flex-wrap: wrap; justify-content: center; gap: .4rem; }
+.adapter-labels span { padding: .25rem .5rem; border: 1px solid var(--strong-border); border-radius: 3px; font-size: .6rem; }
+.training-example pre { font: .95rem/1.6 'Source Serif', Georgia, serif; white-space: pre-wrap; overflow-wrap: anywhere; padding: 0; margin: 0; background: transparent; border: 0; }
+.training-label { font: 600 .7rem/1.5 'Source Sans', sans-serif; color: var(--accent); margin-bottom: .6rem; }
+.training-context { padding-bottom: 1.3rem; color: var(--muted); }
+.training-target { padding: 1rem; border-left: 3px solid var(--strong-border); background: var(--highlight); }
+.training-example > .small-note { margin-top: 1rem; }
 .historical-claim { text-decoration: line-through; color: var(--muted); }
 .setup-code { padding: 1.5rem; background: var(--code-bg); border: 1px solid var(--border); white-space: pre-wrap; overflow-wrap: anywhere; }
 .setup-code code { white-space: pre-wrap; overflow-wrap: anywhere; }

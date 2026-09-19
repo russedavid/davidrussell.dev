@@ -24,7 +24,7 @@ def frontline_preview():
 
 
 def project_card(project):
-    preview = {"frontline": frontline_preview, "otsc": otsc_preview, "career-workbench": career_preview}
+    preview = {"frontline": frontline_preview, "otsc": otsc_preview, "career-workbench": career_preview, "qwen-ttrpg": qwen_preview}
     return Article(
         preview[project["slug"]](),
         Div(P(project["status"], cls="project-status"), H3(A(project["title"], href=f"/projects/{project['slug']}")),
@@ -336,5 +336,131 @@ def career_page(step=0):
             P("Explore the fictional examples or bring your own material into a private workspace."),
             Div(A("View the repository ↗", href=CAREER_REPO, cls="button-link"),
                 A("Read the usage guide ↗", href=CAREER_REPO + "/blob/main/docs/usage.md", cls="text-link"), cls="actions"),
+            cls="project-outro"),
+    )
+
+
+QWEN_REPO = "https://github.com/russedavid/qwen-ttrpg"
+DATASET_REPO = "https://github.com/russedavid/format_conversation_dataset"
+QWEN_TTRPG = {
+    "slug": "qwen-ttrpg", "title": "Qwen TTRPG", "status": "Local model training · Open source tooling",
+    "tagline": "Training an AI to take its turn.",
+    "description": "A complete path from reviewed conversations to fine-tuned roleplaying assistants: prepare the data, train task adapters, compare their behavior, and serve them locally.",
+    "stack": "Conversational data / QLoRA + FSDP2 / Evaluation / GPU serving",
+}
+PROJECTS.append(QWEN_TTRPG)
+
+
+def qwen_preview():
+    return Div(
+        Div(Span("QWEN TTRPG", cls="preview-brand"), Span("Training + inference", cls="preview-label"), cls="preview-bar"),
+        Div(P("One shared model", cls="model-base-label"), Strong("27B", cls="model-size"),
+            P("Qwen base · three task adapters", cls="model-base-caption"),
+            Div(Span("Actions"), Span("Storytelling"), Span("Rules"), cls="adapter-labels"),
+            P("Reviewed data → train → verify → compare", cls="preview-footnote"), cls="model-paper"),
+        cls="project-preview qwen-preview", aria_label="One 27-billion-parameter Qwen base shared by action, storytelling, and rules adapters",
+    )
+
+
+QWEN_STEPS = (
+    {
+        "label": "1. Keep the exchange", "status": "A response needs its context",
+        "description": "Keep the complete question and the exchange that led to it. Consecutive lines from the responding speaker form one target. Review the wording before it becomes a training example.",
+        "context_label": "Prior exchange · input context",
+        "context": "Narrator: The ferry is still tied to the dock.\nPlayer: I ask the operator whether we can leave before the storm.",
+        "target_label": "Next response · reviewed target",
+        "target": "The operator checks the gathering clouds. ‘We can leave now, if you are ready.’ She waits for your answer.",
+        "note": "The response addresses the question and leaves the player's decision open.",
+    },
+    {
+        "label": "2. Choose what learns", "status": "Loss belongs to the response",
+        "description": "The model sees the full exchange. Only the assistant's response and end-of-turn token contribute to the training loss. Required context and target text are never clipped to squeeze an example into the window.",
+        "context_label": "Prompt · excluded from training loss",
+        "context": "Narrator: The ferry is still tied to the dock.\nPlayer: I ask the operator whether we can leave before the storm.",
+        "target_label": "Completion + end token · included in training loss",
+        "target": "The operator checks the gathering clouds. ‘We can leave now, if you are ready.’ She waits for your answer.",
+        "note": "Conceptual loss mask. The real build verifies boundaries using the model's own tokenizer.",
+    },
+    {
+        "label": "3. Test the result", "status": "Check the weights, then the behavior",
+        "description": "Verify that the saved adapter's tensor names, shapes, and values actually reach the model. Compare the base and adapted model on held-out inputs, then review shuffled answers without candidate identities or timing cues.",
+        "context_label": "Same held-out input for both candidates",
+        "context": "A new participant question, its preceding exchange, and the established facts. Keep generation settings matched.",
+        "target_label": "Questions for the review",
+        "target": "Did it answer the latest question?\nDid it preserve what was already established?\nDid it leave the player's choices open?\nDid it invent a fact or rule?",
+        "note": "No fabricated model outputs or scores: this step illustrates the comparison protocol.",
+    },
+)
+
+
+def qwen_walkthrough(step=0):
+    item = QWEN_STEPS[step]
+    return Div(
+        Div(*(A(state["label"], href=f"/projects/qwen-ttrpg?step={index}#walkthrough",
+                hx_get=f"/projects/qwen-ttrpg/walkthrough/{index}", hx_target="#qwen-walkthrough", hx_swap="outerHTML",
+                cls="walkthrough-step selected" if index == step else "walkthrough-step",
+                aria_current="step" if index == step else None) for index, state in enumerate(QWEN_STEPS)),
+            cls="walkthrough-controls", role="group", aria_label="From conversation to model evaluation"),
+        Div(
+            Div(P("THE TRAINING DECISION", cls="eyebrow"), H3(item["status"]), P(item["description"]), cls="sample-context"),
+            Div(
+                Div(P(item["context_label"], cls="training-label"), Pre(item["context"]), cls="training-context"),
+                Div(P(item["target_label"], cls="training-label"), Pre(item["target"]), cls="training-target"),
+                P(item["note"], cls="small-note"), cls="sample-artifact training-example"),
+            cls="walkthrough-body", aria_live="polite"),
+        id="qwen-walkthrough", cls="walkthrough",
+    )
+
+
+def qwen_page(step=0):
+    return (
+        A("← All projects", href="/projects", cls="back-link"),
+        Section(
+            P("Qwen TTRPG / Local model training and serving", cls="eyebrow"),
+            H1("Training an AI to take its turn."),
+            P("A player asks a question, changes course, or challenges an assumption. The next response has to meet that moment and carry the story forward. I built a local pipeline to turn conversational context into training examples, fine-tune Qwen, and test what the resulting model actually does.", cls="project-lede"),
+            Div(A("Explore the training pipeline ↗", href=QWEN_REPO, cls="button-link"),
+                A("See how an example is built ↓", href="#walkthrough", cls="text-link"), cls="actions"),
+            P("Qwen3.8-27B · PyTorch · Axolotl · QLoRA · FSDP2 · llama.cpp", cls="project-stack"),
+            cls="project-hero",
+        ),
+        Section(
+            P("THE MODEL WORK", cls="eyebrow"), H2("Three jobs. One shared base."),
+            P("I fine-tuned task adapters for recognizing game actions, suggesting the next response, and answering questions from supplied rules. Training runs on two 24 GB GPUs with CPU offload. At inference time, the adapters share a quantized base model and are selected per request."),
+            Div(
+                Div(Span("01", cls="flow-number"), Strong("Prepare"), P("Review responses, preserve their context, and reserve independent sources for evaluation.")),
+                Div(Span("02", cls="flow-number"), Strong("Adapt"), P("Train small LoRA weight updates while keeping the large base model frozen.")),
+                Div(Span("03", cls="flow-number"), Strong("Verify"), P("Reload the exact tensors, compare behavior, and retain failures for review.")),
+                Div(Span("04", cls="flow-number"), Strong("Serve"), P("Route requests to task adapters and measure time to first text and completion.")),
+                cls="context-flow",
+            ), cls="case-section",
+        ),
+        Section(
+            P("INSIDE A TRAINING EXAMPLE", cls="eyebrow"), H2("The question belongs with the answer."),
+            qwen_walkthrough(step),
+            P("Fixed, self-authored fictional illustration. It contains no source conversation or model-generated result and makes no inference calls.", cls="small-note"),
+            cls="case-section", id="walkthrough",
+        ),
+        Section(
+            P("ENGINEERING DECISIONS", cls="eyebrow"), H2("Follow the evidence all the way to inference."),
+            detail_row("The data pipeline is part of the model", "The companion Conversational Dataset Formatter preserves speaker and source provenance, binds reviews to exact response text, and checks for shared sources and repeated targets across training and evaluation splits. Completion-only masks keep the learning objective tied to the intended response."),
+            detail_row("Training has to fit the machine", "QLoRA limits trainable parameters; FSDP2 and CPU offload distribute training across the available hardware. Activation checkpointing trades extra computation for memory. The launcher checks GPU availability and records the configuration used for each run."),
+            detail_row("A saved adapter must survive the handoff", "Portable export removes checkpoint-wrapper names without altering tensor values. Strict reload compares names, shapes, and loaded values. GGUF conversion checks that attention-head permutations preserve the low-rank weight update."),
+            detail_row("Shared weights still have a scheduling cost", "Each inference request enables its task adapter and explicitly disables the others. Reusing one base saves model memory, but different adapter configurations can queue separately. Context length and concurrent requests still compete for GPU memory."),
+            cls="case-section",
+        ),
+        Section(
+            P("EVALUATION", cls="eyebrow"), H2("An improvement has to survive a comparison."),
+            P("Base and adapted models receive matched inputs and generation settings. The harness records completion status, time to first visible text, total latency, token usage, and explicit response checks. A separate A/B review shuffles candidate labels independently of execution order."),
+            P("Lower reference loss does not establish a better response. Review considers relevance, continuity, participant agency, and unsupported facts. The original continuation is one possible answer; a good alternative may use different words."),
+            P("The published tools have automated CI checks and have been exercised with the real local tokenizer and model service. The included synthetic cases test the harness; they are not a representative quality benchmark. Training material, fine-tuned weights, and private comparison reports are not distributed.", cls="small-note"),
+            Div(A("Read the evaluation protocol ↗", href=QWEN_REPO + "/blob/main/docs/evaluation.md", cls="text-link"),
+                A("Inspect the reload checks ↗", href=QWEN_REPO + "/blob/main/qwen_ttrpg/adapters.py", cls="text-link"), cls="actions"),
+            cls="case-section",
+        ),
+        Div(H2("Two repositories. One path from data to deployment."),
+            P("Use the formatter to prepare reviewed examples, then train, evaluate, and serve adapters with Qwen TTRPG. Both run locally with your own material and model files. Cloning the code does not download my fine-tuned weights."),
+            Div(A("Qwen TTRPG ↗", href=QWEN_REPO, cls="button-link"),
+                A("Conversational Dataset Formatter ↗", href=DATASET_REPO, cls="text-link"), cls="actions"),
             cls="project-outro"),
     )

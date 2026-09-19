@@ -38,12 +38,14 @@ The application has no session middleware. Static serving is restricted to `asse
 
 ## Project pages
 
+- **Qwen TTRPG**: `/projects/qwen-ttrpg`, connecting the [model-training tools](https://github.com/russedavid/qwen-ttrpg) with the [Conversational Dataset Formatter](https://github.com/russedavid/format_conversation_dataset). A fictional walkthrough explains response context, completion-only loss, and model comparison. The page does not run inference or distribute training sources or weights.
+
 - **Career Workbench**: `/projects/career-workbench`, with the [source repository](https://github.com/russedavid/career-workbench), localhost usage, and a fixed fictional correction walkthrough. Its source records, conversations and generated documents stay in private workspaces.
 
 - **Frontline**: `/projects/frontline`, with the public demo, [source repository](https://github.com/russedavid/report-generator), a clearly labeled report illustration, and links to evaluation work.
 - **Over The Shoulder Coder**: `/projects/otsc`, with the [source repository](https://github.com/russedavid/over-the-shoulder), product story, and an interactive, fixed-example walkthrough. It is an illustration, not a running desktop app or live inference endpoint. Recorded evaluations remain private.
 
-The homepage retains the original About/Blog/Tools sidebar, center portrait, and prominent GitHub/LinkedIn/Twitter/High Order Software picture cards and copy. Frontline and OTSC are additions below that layout.
+The homepage retains the original About/Blog/Tools sidebar, center portrait, and prominent GitHub/LinkedIn/Twitter/High Order Software picture cards and copy. Project cards appear below that layout.
 
 Project descriptions and sample content live in `projects.py`. `main.py` owns routes and layout, `styles.py` supplies the theme and its inline preference toggle. Blog content remains in `blogs.py`.
 
