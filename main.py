@@ -6,7 +6,7 @@ from starlette.concurrency import run_in_threadpool
 from air_quality import handle_aqi_request
 from styles import BASE_STYLES, THEME_SCRIPT
 from blogs import BLOG_POSTS
-from projects import PROJECTS, project_card, project_section, frontline_page, otsc_page, otsc_walkthrough, CAREER_WORKBENCH, career_page, career_walkthrough, QWEN_TTRPG, QWEN_STEPS, qwen_page, qwen_walkthrough
+from projects import PROJECTS, project_card, project_section, frontline_page, otsc_page, otsc_walkthrough, CAREER_WORKBENCH, career_page, career_walkthrough, QWEN_TTRPG, QWEN_STEPS, qwen_page, qwen_walkthrough, STORY_COPILOT, story_page
 css = Style(BASE_STYLES)
 ASSETS = Path(__file__).resolve().parent / "assets"
 app = FastHTML(
@@ -230,6 +230,11 @@ def qwen_sample(step: int):
     if step not in range(len(QWEN_STEPS)):
         raise HTTPException(404)
     return qwen_walkthrough(step)
+
+
+@rt("/projects/story-copilot")
+def story_copilot(request):
+    return create_layout(request.url.path, *story_page(), title="Story Copilot", description=STORY_COPILOT["description"])
 
 
 @rt("/about")

@@ -24,7 +24,7 @@ def frontline_preview():
 
 
 def project_card(project):
-    preview = {"frontline": frontline_preview, "otsc": otsc_preview, "career-workbench": career_preview, "qwen-ttrpg": qwen_preview}
+    preview = {"frontline": frontline_preview, "otsc": otsc_preview, "career-workbench": career_preview, "qwen-ttrpg": qwen_preview, "story-copilot": story_preview}
     return Article(
         preview[project["slug"]](),
         Div(P(project["status"], cls="project-status"), H3(A(project["title"], href=f"/projects/{project['slug']}")),
@@ -463,4 +463,56 @@ def qwen_page(step=0):
             Div(A("Qwen TTRPG ↗", href=QWEN_REPO, cls="button-link"),
                 A("Conversational Dataset Formatter ↗", href=DATASET_REPO, cls="text-link"), cls="actions"),
             cls="project-outro"),
+    )
+
+
+STORY_COPILOT = {
+    "slug": "story-copilot", "title": "Story Copilot", "status": "Local web app · In development",
+    "tagline": "Keep the story moving. Keep the players in charge.",
+    "description": "Follow a shared story, recover the details that matter, and suggest the facilitator’s next response while preserving each character’s choices and knowledge.",
+    "stack": "Agent decisions / Conversation memory / Grounded rules",
+}
+PROJECTS.append(STORY_COPILOT)
+
+
+def story_preview():
+    return Div(
+        Div(Span("STORY COPILOT", cls="preview-brand"), Span("Authored illustration", cls="preview-label"), cls="preview-bar"),
+        Div(P("“I leave the hatch closed. I want to talk to the caretaker.”", cls="task-brief"),
+            Div(Span("CONTEXT", cls="state-label"), P("The player changed direction. The hatch remains closed."), cls="report-line"),
+            Div(Span("PRIVATE GUIDANCE", cls="state-label"), P("Give the caretaker a reply. Leave the next choice to the player."), cls="report-line"),
+            P("A suggestion is a possibility. The conversation is the record.", cls="preview-footnote"), cls="report-paper"),
+        cls="project-preview frontline-preview", aria_label="Authored illustration of a changed player choice and private facilitator guidance",
+    )
+
+
+def story_page():
+    repo = "https://github.com/russedavid/story-copilot"
+    return (
+        A("← All projects", href="/projects", cls="back-link"),
+        Section(P("Story Copilot / Local web application", cls="eyebrow"),
+            H1("A second pair of eyes for the person running the story."),
+            P("Players change their minds. One character learns a secret the others haven’t heard. A correction changes what happened five minutes ago. Story Copilot follows those changes and helps the facilitator find a useful next response.", cls="project-lede"),
+            Div(A("Run it locally ↗", href=repo + "#start-locally", cls="button-link"), A("View source ↗", href=repo, cls="text-link"), cls="actions"),
+            P("Python · FastHTML · HTMX · SQLite · Local models and optional task adapters", cls="project-stack"), cls="project-hero"),
+        Section(Div(P("AT THE TABLE", cls="eyebrow"), H2("The human runs the game."),
+            P("The copilot suggests narration, questions, and rule advice. The facilitator can use a suggestion, ignore it, or ask for another. Only the actual conversation supports the working story state."),
+            P("Bring your own setting, rules, character sheets, and participants—or start with the included original fictional example. Type contributions or opt into separate microphone and system-audio capture.")),
+            story_preview(), cls="example-grid"),
+        Section(P("AGENT BEHAVIOR", cls="eyebrow"), H2("Decide what is missing before answering."),
+            detail_row("Recall the exchange", "Retrieve earlier dialogue with the surrounding questions, replies, and corrections. Keep sources attached to the memory."),
+            detail_row("Inspect a character", "Look up current resources and recorded knowledge. A fact visible to the facilitator is not automatically something every character knows."),
+            detail_row("Consult the campaign’s rules", "Search only the supplied rule documents. Verify quotations and calculate from explicit inputs; ask when the rule or necessary value is missing."),
+            detail_row("Review the draft", "A bounded editing pass checks player agency, knowledge, and continuity against the source. It retains the original draft and explains its edits; separate evaluation judges whether those edits helped."),
+            detail_row("Respond—or clarify", "A bounded decision loop chooses its next evidence tool, then produces private guidance or a concrete question. Its decisions and failures are inspectable in the trace."), cls="case-section"),
+        Section(P("CONTINUITY", cls="eyebrow"), H2("Carry the story across sessions."),
+            P("The application packs complete exchanges and relevant state into a measured context budget. Source revisions invalidate stale work. Continuing a session preserves its history; branching creates an alternative without changing the original."),
+            P("Model requests can share one local base with small task adapters. Speech recognition runs through a separate queue. Starting the application does not start recording."), cls="case-section"),
+        Section(P("EVALUATION", cls="eyebrow"), H2("See how each response was built."),
+            P("Regression tests cover revisions, stale answers, private guidance, rule isolation, context budgets, audio ordering, and session continuity. An original multi-exchange scenario compares the agent loop with a fixed workflow using the same model and source sequence."),
+            P("The live review includes changed choices, character-private information, corrected resource costs, missing rules, and resuming a session. Valid structure and exact citations do not establish narrative quality; those responses need separate judgment."),
+            A("Read the evaluation method ↗", href=repo + "/blob/main/docs/evaluation.md", cls="text-link"), cls="case-section"),
+        Section(P("RELATED WORK", cls="eyebrow"), H2("The application and the model workshop."),
+            P("Story Copilot is the interactive application. The Qwen TTRPG toolkit prepares, trains, reloads, and evaluates task adapters from a dataset you provide."),
+            A("Explore the training toolkit →", href="/projects/qwen-ttrpg", cls="text-link"), cls="case-section"),
     )
