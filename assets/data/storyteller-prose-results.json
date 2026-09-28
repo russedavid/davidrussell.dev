@@ -1,0 +1,81 @@
+{
+  "study": "Plain-prose storyteller comparison",
+  "date": "2026-09-27",
+  "training_examples": 1250,
+  "base_model": "Qwen3.8-27B",
+  "hardware": "Two RTX 3090 GPUs, 24 GB each; 128 GB host RAM",
+  "method": "Fresh QLoRA SFT; completion-only loss; source-separated training and evaluation",
+  "training_seconds": 16715.592765569687,
+  "optimizer_steps": 313,
+  "reported_epochs": 1.9984,
+  "splits": {
+    "validation": {
+      "cases": 40,
+      "preference": {
+        "left": "base",
+        "right": "s1250",
+        "left_preferred": 13,
+        "right_preferred": 24,
+        "ties": 3
+      },
+      "arms": {
+        "base": {
+          "outcomes": {
+            "pass": 25,
+            "fail": 12,
+            "uncertain": 3
+          },
+          "median_seconds": 5.83235,
+          "median_words": 136.0
+        },
+        "s1250": {
+          "outcomes": {
+            "fail": 6,
+            "pass": 33,
+            "uncertain": 1
+          },
+          "median_seconds": 1.8433000000000002,
+          "median_words": 16.0
+        }
+      }
+    },
+    "test": {
+      "cases": 40,
+      "preference": {
+        "left": "base",
+        "right": "s1250",
+        "left_preferred": 19,
+        "right_preferred": 19,
+        "ties": 2
+      },
+      "arms": {
+        "base": {
+          "outcomes": {
+            "uncertain": 5,
+            "pass": 27,
+            "fail": 8
+          },
+          "median_seconds": 7.4651,
+          "median_words": 159.5
+        },
+        "s1250": {
+          "outcomes": {
+            "fail": 9,
+            "pass": 30,
+            "uncertain": 1
+          },
+          "median_seconds": 1.90015,
+          "median_words": 18.5
+        }
+      }
+    }
+  },
+  "review": "80 scenarios audited and independently cross-reviewed by Astra High. Answers judged by the primary assistant with model identity hidden until each split was graded; no human calibration and not a fresh independent reference-blind judge.",
+  "limits": [
+    "One generation per case, one sampling seed.",
+    "Four held-out source families; cases are correlated.",
+    "Writer-only evaluation on curated context, not live audio or full copilot quality.",
+    "Shorter outputs explain much of the latency change; no throughput improvement established."
+  ],
+  "decision": "No clear held-out storytelling improvement. Retained as experimental; subsequently enabled for an explicit user-requested private interactive trial."
+}

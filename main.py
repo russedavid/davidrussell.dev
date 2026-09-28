@@ -6,7 +6,7 @@ from starlette.concurrency import run_in_threadpool
 from air_quality import handle_aqi_request
 from styles import BASE_STYLES, THEME_SCRIPT
 from blogs import BLOG_POSTS
-from projects import PROJECTS, project_card, project_section, frontline_page, otsc_page, otsc_walkthrough, CAREER_WORKBENCH, career_page, career_walkthrough, QWEN_TTRPG, QWEN_STEPS, qwen_page, qwen_walkthrough, STORY_COPILOT, story_page
+from projects import PROJECTS, project_card, project_section, frontline_page, otsc_page, otsc_walkthrough, CAREER_WORKBENCH, career_page, career_walkthrough, QWEN_TTRPG, QWEN_STEPS, qwen_page, qwen_walkthrough, STORY_COPILOT, story_page, training_feature
 css = Style(BASE_STYLES)
 ASSETS = Path(__file__).resolve().parent / "assets"
 app = FastHTML(
@@ -163,7 +163,7 @@ def home(request):
         ),
         cls="homepage-container"
     )
-    return create_layout(request.url.path, content, project_section())
+    return create_layout(request.url.path, content, training_feature(), project_section())
 
 @rt("/projects")
 def projects_index(request):

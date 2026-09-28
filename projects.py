@@ -1,6 +1,50 @@
 """Public project descriptions and self-authored product illustrations."""
 
 from fasthtml.common import *
+import json
+from pathlib import Path
+
+PROSE_STUDY = json.loads((Path(__file__).parent / "assets/data/storyteller-prose-results.json").read_text())
+
+
+def training_feature():
+    return Section(
+        Div(P("From the model workshop", cls="eyebrow"),
+            H2("Fine-tuning, measured against the task."),
+            P("I built the path from reviewed conversations to a working local model: data preparation, adapter training, evaluation, and an application that uses the result."),
+            A("Read the experiment →", href="/projects/qwen-ttrpg#prose-study", cls="text-link")),
+        Div(
+            Div(Strong("1,250"), Span("reviewed training exchanges")),
+            Div(Strong("27B"), Span("parameters in the shared base")),
+            Div(Strong("80"), Span("validation and test scenarios")),
+            cls="study-stats"),
+        cls="training-feature", aria_label="Latest model training and evaluation work",
+    )
+
+
+def prose_study():
+    rows = []
+    for split, label in [("validation", "Validation"), ("test", "Separate test")]:
+        for arm, name in [("base", "Untuned base"), ("s1250", "1,250-example LoRA")]:
+            result = PROSE_STUDY["splits"][split]["arms"][arm]
+            counts = result["outcomes"]
+            rows.append(Tr(Th(label + " · " + name, scope="row"),
+                           Td(counts["pass"]), Td(counts["fail"]), Td(counts["uncertain"])))
+    return Section(
+        P("September 2026 / Plain-prose experiment", cls="eyebrow"),
+        H2("Lower loss. Shorter answers. A tied test."),
+        P("The storyteller’s job is to answer the players and carry the scene forward. I removed the structured-output requirement from that task and kept state extraction in a separate model call. Then I rebuilt the training data and evaluation around the prose we actually wanted."),
+        P("A fresh QLoRA run used 1,250 reviewed exchanges and finished in 4 hours 39 minutes on two 24 GB GPUs. The data checks bound each review to its source and target, excluded overlapping response spans, and verified the model’s native token boundaries and completion-only loss mask."),
+        Div(Table(Caption("40 cases per split; one response from each model per case"),
+                  Thead(Tr(Th("Split / model", scope="col"), Th("Pass", scope="col"), Th("Fail", scope="col"), Th("Uncertain", scope="col"))),
+                  Tbody(*rows)), cls="results-table"),
+        P("Validation favored the adapter 24–13, with three ties. On the separate test, preference was 19–19 with two ties. Test passes rose from 27 to 30, but definite failures also rose from eight to nine. The gain in pass count does not establish a better storyteller."),
+        P("Validation completion loss fell from 2.608 to 2.017. Median test answers shrank from 159.5 to 18.5 words. Request time fell from 7.47 to 1.90 seconds, largely because there was much less to generate. The model took over player decisions less often, but omitted requested help more often. Cleaner prose sometimes became an incomplete answer."),
+        P("All 80 scenarios were audited and independently cross-reviewed with Astra High. The final answer comparisons were model-judged with candidate identities hidden, without human calibration or a fresh independent reference-blind judge. Four source families, correlated cases, and one generation per case limit the conclusion. This study evaluates the writer, not the live audio pipeline."),
+        P("The adapter remains experimental. It is now available in the private copilot for a deliberate interactive trial, alongside separate state, rules, and player adapters. Selecting it for a trial is not a claim that it outperformed the base."),
+        A("Inspect the aggregate results ↗", href="/public/data/storyteller-prose-results.json", cls="text-link"),
+        cls="case-section", id="prose-study",
+    )
 
 FRONTLINE = {
     "slug": "frontline", "title": "Frontline", "status": "Live web demo",
@@ -345,7 +389,7 @@ DATASET_REPO = "https://github.com/russedavid/format_conversation_dataset"
 QWEN_TTRPG = {
     "slug": "qwen-ttrpg", "title": "Qwen TTRPG", "status": "Local model training · Open source tooling",
     "tagline": "Training an AI to take its turn.",
-    "description": "A complete path from reviewed conversations to fine-tuned roleplaying assistants: prepare the data, train task adapters, compare their behavior, and serve them locally.",
+    "description": "From source-bound training examples to a 27B local model: supervised adapters, preference experiments, and evaluations that distinguish better prose from better answers.",
     "stack": "Conversational data / QLoRA + FSDP2 / Evaluation / GPU serving",
 }
 PROJECTS.append(QWEN_TTRPG)
@@ -426,7 +470,7 @@ def qwen_page(step=0):
         ),
         Section(
             P("THE MODEL WORK", cls="eyebrow"), H2("Three jobs. One shared base."),
-            P("I fine-tuned task adapters for recognizing game actions, suggesting the next response, and answering questions from supplied rules. Training runs on two 24 GB GPUs with CPU offload. At inference time, the adapters share a quantized base model and are selected per request."),
+            P("I fine-tuned task adapters for recognizing game actions, suggesting the next response, and answering questions from supplied rules. The storyteller now returns plain prose; a separate extractor reads the actual conversation to track state. Training runs on two 24 GB GPUs with CPU offload. At inference time, the adapters share a quantized base model and are selected per request."),
             Div(
                 Div(Span("01", cls="flow-number"), Strong("Prepare"), P("Review responses, preserve their context, and reserve independent sources for evaluation.")),
                 Div(Span("02", cls="flow-number"), Strong("Adapt"), P("Train small LoRA weight updates while keeping the large base model frozen.")),
@@ -435,6 +479,7 @@ def qwen_page(step=0):
                 cls="context-flow",
             ), cls="case-section",
         ),
+        prose_study(),
         Section(
             P("INSIDE A TRAINING EXAMPLE", cls="eyebrow"), H2("The question belongs with the answer."),
             qwen_walkthrough(step),
@@ -453,10 +498,12 @@ def qwen_page(step=0):
             P("EVALUATION", cls="eyebrow"), H2("An improvement has to survive a comparison."),
             P("Base and adapted models receive matched inputs and generation settings. The harness records completion status, time to first visible text, total latency, token usage, and explicit response checks. Blinded reviews compare several candidates, with answer labels shuffled independently of execution order."),
             P("Lower reference loss does not establish a better response. Review considers relevance, continuity, participant agency, and unsupported facts. The original continuation is one possible answer; a good alternative may use different words."),
-            P("A response-focused retraining run fit on two 24 GB GPUs and passed exact reload checks for all 672 adapter tensors. In 96 blinded generations, the new storyteller earned more preference credit than either the base or previous adapter. Its strict source-and-task pass rate still trailed the base, so I kept it experimental. Better voice was a useful gain; it was not enough to justify promotion."),
+            P("Earlier experiments compared supervised recipes and DPO preference training under a structured-response contract. The preference model earned more editorial credit but failed more source-and-task checks than the base, so it was not promoted. Those studies explain the move to a prose-only writer; their scores are not directly comparable with the current experiment."),
+            P("A separate 4B evidence policy uses GRPO to learn when to retrieve, answer, or clarify. On 36 authored scenarios at two seeds, it passed 66 of 72 attempts versus 56 after the same number of extra supervised updates. That comparison measures structured conclusions and citations, not story quality; equal updates did not mean equal compute."),
             P("The published tools have automated CI checks and have been exercised with the real local tokenizer and model service. The included synthetic cases test the harness; they are not a representative quality benchmark. Training material, fine-tuned weights, and private comparison reports are not distributed.", cls="small-note"),
             Div(A("Read the evaluation protocol ↗", href=QWEN_REPO + "/blob/main/docs/evaluation.md", cls="text-link"),
-                A("See the storyteller comparison ↗", href=QWEN_REPO + "/blob/main/docs/storyteller-results.md", cls="text-link"),
+                A("Earlier SFT and DPO study ↗", href=QWEN_REPO + "/blob/main/docs/storyteller-preference-results.md", cls="text-link"),
+                A("Agent RL comparison ↗", href=QWEN_REPO + "/blob/main/docs/agent-rl-results.md", cls="text-link"),
                 A("Inspect the reload checks ↗", href=QWEN_REPO + "/blob/main/qwen_ttrpg/adapters.py", cls="text-link"), cls="actions"),
             cls="case-section",
         ),
@@ -510,6 +557,10 @@ def story_page():
         Section(P("CONTINUITY", cls="eyebrow"), H2("Carry the story across sessions."),
             P("The application packs complete exchanges and relevant state into a measured context budget. Source revisions invalidate stale work. Continuing a session preserves its history; branching creates an alternative without changing the original."),
             P("Model requests can share one local base with small task adapters. Speech recognition runs through a separate queue. Starting the application does not start recording."), cls="case-section"),
+        Section(P("THE WRITER AND THE RECORD", cls="eyebrow"), H2("Let the storyteller tell the story."),
+            P("The writer produces scene description, NPC dialogue, questions, and calls for checks as ordinary prose. It no longer has to package its reply as a structured object. A separate model extracts proposed state changes from observed conversation; generated drafts never become evidence of what happened."),
+            P("The local application now supports the newly trained 1,250-example prose adapter alongside the existing classifier, rules assistant, player personalities, and evidence planner. A real UI request verified prose routing and separate extraction. The reviewer flagged that first draft for quality problems and retained it in the trace: successful integration is not the same as a good reply."),
+            A("See the training and held-out comparison →", href="/projects/qwen-ttrpg#prose-study", cls="text-link"), cls="case-section"),
         Section(P("PLAYER AGENTS", cls="eyebrow"), H2("Different personalities. Different knowledge."),
             P("Assign an AI player a character and its own personality adapter, then invite it to take a turn. Its tools see the shared conversation, its own sheet, and messages addressed to that character. The facilitator’s notes and other characters’ secrets stay outside its context."),
             P("Each contribution is labelled as AI speech. A proposed action leaves the outcome to the facilitator; a source correction discards an obsolete reply before it can be posted."),
