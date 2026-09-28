@@ -16,15 +16,22 @@ def check(url, output=None):
         browser = p.chromium.launch()
         try:
             for label, width in (("desktop", 1440), ("phone", 390), ("narrow", 320)):
-                page = browser.new_page(viewport={"width": width, "height": 900})
+                page = browser.new_page(viewport={"width": width, "height": 900}, color_scheme="dark")
                 page.route("https://davidrussell-hamburger-or-hotdog.hf.space/**", lambda route: route.fulfill(body="External classifier placeholder"))
                 errors = []
                 page.on("pageerror", lambda error: errors.append(str(error)))
-                for name, path in (("home", "/"), ("projects", "/projects"), ("frontline", "/projects/frontline"), ("career", "/projects/career-workbench"), ("qwen", "/projects/qwen-ttrpg"), ("otsc", "/projects/otsc")):
+                page.goto(url + "/", wait_until="networkidle")
+                assert page.locator("html").get_attribute("data-theme") == "light"
+                assert page.locator("body").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(229, 219, 195)"
+                assert page.locator(".training-feature").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(255, 255, 221)"
+                assert page.locator(".social-description").first.evaluate("e=>getComputedStyle(e).color") != "rgb(1, 114, 173)"
+                assert page.locator(".social-card img").count() == 4
+                for name, path in (("home", "/"), ("projects", "/projects"), ("frontline", "/projects/frontline"), ("career", "/projects/career-workbench"), ("qwen", "/projects/qwen-ttrpg"), ("story", "/projects/story-copilot"), ("otsc", "/projects/otsc")):
                     page.goto(url + path, wait_until="networkidle")
                     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (label, path)
                     assert page.locator("h1").count() == 1
                     assert page.evaluate("[...document.images].every(i=>i.complete && i.naturalWidth>0)")
+                    assert not page.evaluate("[...document.querySelectorAll('main *')].filter(e=>e.getBoundingClientRect().width>100 && e.getBoundingClientRect().height>20 && getComputedStyle(e).backgroundColor==='rgb(255, 255, 255)').map(e=>e.className)"), (label, path, "bright-white surface")
                     if output:
                         page.screenshot(path=str(output / f"{name}-{label}.png"), full_page=True)
                 page.get_by_role("link", name="2. New requirement").click()
@@ -50,6 +57,13 @@ def check(url, output=None):
                 assert "Did it leave the player's choices open?" in page.locator(".training-target").inner_text()
                 assert page.locator('#qwen-walkthrough [aria-current="step"]').inner_text() == "3. Test the result"
                 page.get_by_role("button", name="Use dark theme").click()
+                assert page.locator("body").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(25, 22, 15)"
+                for name, path in (("home", "/"), ("qwen", "/projects/qwen-ttrpg"), ("story", "/projects/story-copilot")):
+                    page.goto(url + path, wait_until="networkidle")
+                    assert page.locator("html").get_attribute("data-theme") == "dark"
+                    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth"), (label, path, "dark")
+                    if output:
+                        page.screenshot(path=str(output / f"{name}-{label}-dark.png"), full_page=True)
                 page.goto(url + "/tools", wait_until="domcontentloaded")
                 assert page.evaluate("document.documentElement.dataset.theme") == "dark"
                 assert page.evaluate("htmx.version") == "4.0.0"

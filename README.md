@@ -2,6 +2,13 @@
 
 David Russell's personal website: projects, writing, and a few small tools. Built with FastHTML and server-rendered HTML, with a beige default theme and an optional warm dark theme.
 
+The light palette uses manila and old-PC beige surfaces. The model-work feature
+and code panels use `#ffffdd` with black text, the terminal background/foreground
+from Stephen Wassell's [Light High Contrast Theme](https://github.com/StephenWassell/light-high-contrast-theme/blob/master/themes/Light%20High%20Contrast%20Theme-color-theme.json).
+Its commented-out ANSI examples are not treated as configured colors. The dark
+palette is a separate brown-and-cream adaptation. First visits default to light
+even when the operating system uses dark mode; an explicit choice persists.
+
 ## Run locally
 
 Tested with Python 3.13. The application requires Python 3.10 or newer.
@@ -38,7 +45,19 @@ The application has no session middleware. Static serving is restricted to `asse
 
 ## Project pages
 
+- **Story Copilot**: `/projects/story-copilot`, the locally runnable application
+  with private suggestions, separate prose/state models, source-linked memory,
+  scoped player agents, and a learned evidence planner. Links to the public
+  application and its workflow findings.
+
 - **Qwen TTRPG**: `/projects/qwen-ttrpg`, connecting the [model-training tools](https://github.com/russedavid/qwen-ttrpg) with the [Conversational Dataset Formatter](https://github.com/russedavid/format_conversation_dataset). A fictional walkthrough explains response context, completion-only loss, and model comparison. The page does not run inference or distribute training sources or weights.
+
+  The current prose-only study is at `#prose-study`. Its public aggregate data is
+  `assets/data/storyteller-prose-results.json`: 1,250 training examples, separate
+  40-case validation and test splits, mixed outcomes, and explicit judge/sample
+  limitations. Earlier structured-writer SFT/DPO experiments and the separate 4B
+  GRPO policy remain distinct studies. No private prompts, transcripts, case
+  identities, audio, model weights, or review traces are included.
 
 - **Career Workbench**: `/projects/career-workbench`, with the [source repository](https://github.com/russedavid/career-workbench), localhost usage, and a fixed fictional correction walkthrough. Its source records, conversations and generated documents stay in private workspaces.
 
@@ -66,7 +85,13 @@ uv pip install -r requirements-dev.txt
 .venv/bin/python tests/browser_check.py --url http://127.0.0.1:8017
 ```
 
-The browser check covers desktop and phone layouts, theme persistence, real HTMX 4 form submission, walkthrough navigation, and navigation with JavaScript disabled. Pass `--output /tmp/davidrussell-site-review` to save review screenshots outside the repository. The classifier iframe is stubbed during the check; air-quality inputs are intentionally invalid so no Google request is made.
+The browser check covers desktop and phone layouts, light-by-default behavior on
+a dark OS, the rendered terminal colors, dark-theme persistence, bright-white
+surface detection, preserved photos, real HTMX 4 form submission, walkthrough
+navigation, and navigation with JavaScript disabled. Pass
+`--output /tmp/davidrussell-site-review` to save review screenshots outside the
+repository. The classifier iframe is stubbed during the check; air-quality inputs
+are intentionally invalid so no Google request is made.
 
 ## Deployment
 
