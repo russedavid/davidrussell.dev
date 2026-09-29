@@ -22,7 +22,7 @@ def check(url, output=None):
                 page.on("pageerror", lambda error: errors.append(str(error)))
                 page.goto(url + "/", wait_until="networkidle")
                 assert page.locator("html").get_attribute("data-theme") == "light"
-                assert page.locator("body").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(229, 219, 195)"
+                assert page.locator("body").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(238, 238, 216)"
                 assert page.locator(".training-feature").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(255, 255, 221)"
                 assert page.locator(".social-description").first.evaluate("e=>getComputedStyle(e).color") != "rgb(1, 114, 173)"
                 assert page.locator(".social-card img").count() == 4
@@ -57,7 +57,7 @@ def check(url, output=None):
                 assert "Did it leave the player's choices open?" in page.locator(".training-target").inner_text()
                 assert page.locator('#qwen-walkthrough [aria-current="step"]').inner_text() == "3. Test the result"
                 page.get_by_role("button", name="Use dark theme").click()
-                assert page.locator("body").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(25, 22, 15)"
+                assert page.locator("body").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(24, 24, 22)"
                 for name, path in (("home", "/"), ("qwen", "/projects/qwen-ttrpg"), ("story", "/projects/story-copilot")):
                     page.goto(url + path, wait_until="networkidle")
                     assert page.locator("html").get_attribute("data-theme") == "dark"

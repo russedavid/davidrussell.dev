@@ -1,4 +1,4 @@
-"""The site's warm, responsive light and dark themes."""
+"""Yellow-ivory PC-case beige, with a neutral charcoal dark theme."""
 
 BASE_STYLES = """
 @font-face { font-family: 'Source Sans'; src: url('/public/fonts/source-sans/SourceSans3-Regular.otf') format('opentype'); font-weight: 400; font-display: swap; }
@@ -7,12 +7,12 @@ BASE_STYLES = """
 @font-face { font-family: 'Source Serif'; src: url('/public/fonts/source-serif/SourceSerif4-Semibold.otf') format('opentype'); font-weight: 600 900; font-display: swap; }
 :root, :root[data-theme=light], :root[data-theme=dark] {
     color-scheme: light;
-    --background: #e5dbc3; --surface: #f0e6d2; --highlight: #daccae;
-    --text: #30291e; --muted: #67563f; --accent: #724b2c; --accent-hover: #50331c;
-    --border: #c4b493; --strong-border: #96815e;
+    --background: #eeeed8; --surface: #f5f5e2; --highlight: #e2e2c9;
+    --text: #292925; --muted: #616158; --accent: #515147; --accent-hover: #30302a;
+    --border: #c8c8b5; --strong-border: #96968a;
     /* Stephen Wassell's Light High Contrast Theme: terminal.background / foreground. */
     --terminal-bg: #ffffdd; --terminal-ink: #000000;
-    --code-bg: var(--terminal-bg); --inverse: #f0e6d2;
+    --code-bg: var(--terminal-bg); --inverse: #f5f5e2;
     --success: #496044; --error: #9b342a;
     --pico-font-family: 'Source Sans', system-ui, sans-serif;
     --pico-font-size: 18px; --pico-line-height: 1.65;
@@ -20,7 +20,7 @@ BASE_STYLES = """
     --pico-primary: var(--accent); --pico-primary-hover: var(--accent-hover);
     --pico-primary-background: var(--accent); --pico-primary-hover-background: var(--accent-hover);
     --pico-primary-border: var(--accent); --pico-primary-hover-border: var(--accent-hover);
-    --pico-primary-inverse: var(--inverse); --pico-primary-focus: #724b2c33;
+    --pico-primary-inverse: var(--inverse); --pico-primary-focus: #51514733;
     --pico-muted-color: var(--muted); --pico-muted-border-color: var(--border);
     --pico-card-background-color: var(--surface); --pico-card-border-color: var(--border);
     --pico-form-element-background-color: var(--surface); --pico-form-element-color: var(--text);
@@ -36,13 +36,13 @@ BASE_STYLES = """
 }
 :root[data-theme=dark] {
     color-scheme: dark;
-    --background: #19160f; --surface: #262116; --highlight: #352c1d;
-    --text: #e4d5b5; --muted: #baa989; --accent: #dfb67b; --accent-hover: #efcfa0;
-    --border: #51432c; --strong-border: #89734f;
-    --terminal-bg: #302b1b; --terminal-ink: #eee0b1; --inverse: #211b12;
+    --background: #181816; --surface: #22221f; --highlight: #2d2d27;
+    --text: #eeeedb; --muted: #b8b8a7; --accent: #e7e7c5; --accent-hover: #f5f5df;
+    --border: #474740; --strong-border: #7e7e70;
+    --terminal-bg: #272722; --terminal-ink: #ffffdd; --inverse: #20201c;
     --success: #b3c899; --error: #f0a293;
     --pico-primary-background: var(--accent); --pico-primary-hover-background: var(--accent-hover);
-    --pico-primary-inverse: var(--inverse); --pico-primary-focus: #dfb67b44;
+    --pico-primary-inverse: var(--inverse); --pico-primary-focus: #e7e7c544;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 32px; }

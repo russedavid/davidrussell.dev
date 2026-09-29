@@ -1,12 +1,13 @@
 # davidrussell.dev
 
-David Russell's personal website: projects, writing, and a few small tools. Built with FastHTML and server-rendered HTML, with a beige default theme and an optional warm dark theme.
+David Russell's personal website: projects, writing, and a few small tools. Built with FastHTML and server-rendered HTML, with a yellow-ivory beige default theme and an optional charcoal-and-ivory dark theme.
 
-The light palette uses manila and old-PC beige surfaces. The model-work feature
+The light palette uses yellowish off-white, like a beige PC case, with neutral
+gray text and borders. The model-work feature
 and code panels use `#ffffdd` with black text, the terminal background/foreground
 from Stephen Wassell's [Light High Contrast Theme](https://github.com/StephenWassell/light-high-contrast-theme/blob/master/themes/Light%20High%20Contrast%20Theme-color-theme.json).
 Its commented-out ANSI examples are not treated as configured colors. The dark
-palette is a separate brown-and-cream adaptation. First visits default to light
+palette uses near-neutral charcoal surfaces with yellow-ivory text. First visits default to light
 even when the operating system uses dark mode; an explicit choice persists.
 
 ## Run locally
