@@ -22,7 +22,7 @@ def check(url, output=None):
                 page.on("pageerror", lambda error: errors.append(str(error)))
                 page.goto(url + "/", wait_until="networkidle")
                 assert page.locator("html").get_attribute("data-theme") == "light"
-                assert page.locator("body").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(238, 238, 216)"
+                assert page.locator("body").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(247, 247, 231)"
                 assert page.locator(".training-feature").evaluate("e=>getComputedStyle(e).backgroundColor") == "rgb(255, 255, 221)"
                 assert page.locator(".social-description").first.evaluate("e=>getComputedStyle(e).color") != "rgb(1, 114, 173)"
                 assert page.locator(".social-card img").count() == 4

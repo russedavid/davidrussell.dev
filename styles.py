@@ -7,12 +7,12 @@ BASE_STYLES = """
 @font-face { font-family: 'Source Serif'; src: url('/public/fonts/source-serif/SourceSerif4-Semibold.otf') format('opentype'); font-weight: 600 900; font-display: swap; }
 :root, :root[data-theme=light], :root[data-theme=dark] {
     color-scheme: light;
-    --background: #eeeed8; --surface: #f5f5e2; --highlight: #e2e2c9;
+    --background: #f7f7e7; --surface: #fbfbef; --highlight: #efefda;
     --text: #292925; --muted: #616158; --accent: #515147; --accent-hover: #30302a;
     --border: #c8c8b5; --strong-border: #96968a;
     /* Stephen Wassell's Light High Contrast Theme: terminal.background / foreground. */
     --terminal-bg: #ffffdd; --terminal-ink: #000000;
-    --code-bg: var(--terminal-bg); --inverse: #f5f5e2;
+    --code-bg: var(--terminal-bg); --inverse: #fbfbef;
     --success: #496044; --error: #9b342a;
     --pico-font-family: 'Source Sans', system-ui, sans-serif;
     --pico-font-size: 18px; --pico-line-height: 1.65;
