@@ -23,18 +23,18 @@ class SiteTests(unittest.TestCase):
     def test_career_project_navigation_and_fictional_walkthrough(self):
         response = self.client.get("/projects/career-workbench")
         self.assertEqual(response.status_code, 200)
-        self.assertIn("A good resume starts before the writing", response.text)
+        self.assertIn("Career research and resume drafting", response.text)
         self.assertIn("https://github.com/russedavid/career-workbench", response.text)
         self.assertIn("authenticated Codex CLI", response.text)
         self.assertIn("Fixed, self-authored fictional example", response.text)
         for path in ("/", "/projects", "/sitemap.xml"):
             self.assertIn("/projects/career-workbench", self.client.get(path).text)
         fragment = self.client.get("/projects/career-workbench/walkthrough/1", headers={"HX-Request": "true"})
-        self.assertIn("Dependent draft needs review", fragment.text)
+        self.assertIn("Remove the unsupported reduction claim", fragment.text)
         self.assertNotIn("<html", fragment.text)
         self.assertEqual(self.client.get("/projects/career-workbench/walkthrough/9").status_code, 404)
-        self.assertIn("Shared contribution retained", self.client.get("/projects/career-workbench?step=2").text)
-        self.assertIn("Source recorded", self.client.get("/projects/career-workbench?step=bad").text)
+        self.assertIn("Write the contribution that is supported", self.client.get("/projects/career-workbench?step=2").text)
+        self.assertIn("Separate the contribution from the team result", self.client.get("/projects/career-workbench?step=bad").text)
 
     def test_form_submission_missing_and_invalid_values_do_not_call_provider(self):
         with patch("air_quality.requests.post") as call:
@@ -48,18 +48,18 @@ class SiteTests(unittest.TestCase):
     def test_training_project_links_and_walkthrough_navigation(self):
         page = self.client.get("/projects/qwen-ttrpg")
         self.assertEqual(page.status_code, 200)
-        self.assertIn("Training an AI to take its turn", page.text)
+        self.assertIn("Fine-tuning Qwen for Story Copilot", page.text)
         self.assertIn("https://github.com/russedavid/qwen-ttrpg", page.text)
         self.assertIn("https://github.com/russedavid/format_conversation_dataset", page.text)
         self.assertIn("Fixed, self-authored fictional illustration", page.text)
         for path in ("/", "/projects", "/sitemap.xml"):
             self.assertIn("/projects/qwen-ttrpg", self.client.get(path).text)
         fragment = self.client.get("/projects/qwen-ttrpg/walkthrough/1", headers={"HX-Request": "true"})
-        self.assertIn("Loss belongs to the response", fragment.text)
+        self.assertIn("Train on the continuation, with the exchange as context", fragment.text)
         self.assertNotIn("<html", fragment.text)
-        self.assertIn("Check the weights, then the behavior", self.client.get("/projects/qwen-ttrpg?step=2").text)
+        self.assertIn("Accept another good continuation; reject a broken scene", self.client.get("/projects/qwen-ttrpg?step=2").text)
         for value in ("bad", "-1", "99"):
-            self.assertIn("A response needs its context", self.client.get(f"/projects/qwen-ttrpg?step={value}").text)
+            self.assertIn("Keep both players’ requests and the private fact", self.client.get(f"/projects/qwen-ttrpg?step={value}").text)
         self.assertEqual(self.client.get("/projects/qwen-ttrpg/walkthrough/99").status_code, 404)
 
     def test_aqi_results_keep_successful_locations_when_another_lookup_fails(self):

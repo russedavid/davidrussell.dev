@@ -51,7 +51,7 @@ The application has no session middleware. Static serving is restricted to `asse
   scoped player agents, and a learned evidence planner. Links to the public
   application and its workflow findings.
 
-- **Qwen TTRPG**: `/projects/qwen-ttrpg`, connecting the [model-training tools](https://github.com/russedavid/qwen-ttrpg) with the [Conversational Dataset Formatter](https://github.com/russedavid/format_conversation_dataset). A fictional walkthrough explains response context, completion-only loss, and model comparison. The page does not run inference or distribute training sources or weights.
+- **Qwen TTRPG**: `/projects/qwen-ttrpg`, connecting the [model-training tools](https://github.com/russedavid/qwen-ttrpg) with the [Conversational Dataset Formatter](https://github.com/russedavid/format_conversation_dataset). A fictional harbor-station scene demonstrates response context, private character knowledge, completion-only loss, and evaluation of an alternative continuation. The page does not run inference or distribute training sources or weights.
 
   The current prose-only study is at `#prose-study`. Its public aggregate data is
   `assets/data/storyteller-prose-results.json`: 1,250 training examples, separate
@@ -60,14 +60,14 @@ The application has no session middleware. Static serving is restricted to `asse
   GRPO policy remain distinct studies. No private prompts, transcripts, case
   identities, audio, model weights, or review traces are included.
 
-- **Career Workbench**: `/projects/career-workbench`, with the [source repository](https://github.com/russedavid/career-workbench), localhost usage, and a fixed fictional correction walkthrough. Its source records, conversations and generated documents stay in private workspaces.
+- **Career Workbench**: `/projects/career-workbench`, with the [source repository](https://github.com/russedavid/career-workbench), localhost usage, and a fictional returns-coordinator account that separates direct ownership from an estimated team result. Its source records, conversations and generated documents stay in private workspaces.
 
-- **Frontline**: `/projects/frontline`, with the public demo, [source repository](https://github.com/russedavid/report-generator), a clearly labeled report illustration, and links to evaluation work.
-- **Over The Shoulder Coder**: `/projects/otsc`, with the [source repository](https://github.com/russedavid/over-the-shoulder), product story, and an interactive, fixed-example walkthrough. It is an illustration, not a running desktop app or live inference endpoint. Recorded evaluations remain private.
+- **Frontline**: `/projects/frontline`, with the public demo, [source repository](https://github.com/russedavid/report-generator), an authored visit with conflicting work-order and technician records, and links to evaluation work.
+- **Over The Shoulder Coder**: `/projects/otsc`, with the [source repository](https://github.com/russedavid/over-the-shoulder), implementation notes, and an authored webhook retry-policy walkthrough with locally checked Python code. It is an illustration, not a running desktop app or live inference endpoint. Recorded evaluations remain private.
 
 The homepage retains the original About/Blog/Tools sidebar, center portrait, and prominent GitHub/LinkedIn/Twitter/High Order Software picture cards and copy. Project cards appear below that layout.
 
-Project descriptions and sample content live in `projects.py`. `main.py` owns routes and layout, `styles.py` supplies the theme and its inline preference toggle. Blog content remains in `blogs.py`.
+Project descriptions live in `projects.py`; authored scenes, accounts and code examples live in `project_examples.py`. Examples are labelled separately from measured results and are not represented as recorded application outputs. `main.py` owns routes and layout, `styles.py` supplies the theme and its inline preference toggle. Blog content remains in `blogs.py`.
 
 ## Checks
 

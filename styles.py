@@ -261,10 +261,23 @@ BASE_STYLES += """
 
 /* Align the previews and reading links in the two-column project grid. */
 .project-card { display: flex; flex-direction: column; }
-.project-card > .project-preview { min-height: 338px; }
+.project-card > .project-preview { min-height: 0; border-top: 1px solid var(--border); border-bottom: 0; }
 .project-copy { display: flex; flex-direction: column; flex: 1; }
 .project-copy > .text-link { margin-top: auto; align-self: flex-start; }
 .project-copy .project-stack { margin-bottom: 1.3rem; }
+.project-card-link { padding: 1.2rem 1.6rem; border-top: 1px solid var(--border); }
+.project-section-intro { max-width: 760px; color: var(--muted); margin-bottom: 2rem; }
+.example-sources { max-width: 800px; }
+.example-sources dt { font-weight: 600; margin-top: 1rem; }
+.example-sources dd { margin: .25rem 0 1rem; }
+.case-section > .project-preview { max-width: 800px; margin-block: 1.5rem; border: 1px solid var(--border); }
+.scene-example { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.scene-example > div { min-width: 0; }
+.scene-example blockquote { font: 1.05rem/1.7 'Source Serif', Georgia, serif; white-space: pre-line; }
+.sample-context li, .career-artifact li { font-size: .9rem; }
+.training-example .training-target { margin-top: 1.4rem; }
+.case-section details { max-width: 800px; margin-top: 1.6rem; }
+@media (max-width: 800px) { .scene-example { grid-template-columns: 1fr; } }
 @media (max-width: 700px) { .project-card > .project-preview { min-height: 0; } }
 """
 

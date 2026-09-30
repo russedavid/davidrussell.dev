@@ -169,8 +169,8 @@ def home(request):
 def projects_index(request):
     return create_layout(
         "/projects",
-        Div(P("Selected work", cls="eyebrow"), H1("Software with a job to do."),
-            P("Personal projects in applied AI: the product, the engineering decisions, and the evidence behind them."), cls="project-index-intro"),
+        Div(P("Projects", cls="eyebrow"), H1("AI applications and model training tools"),
+            P("What I built, how it works, and what I found when testing it. The examples are labelled separately from recorded results."), cls="project-index-intro"),
         Div(*(project_card(project) for project in PROJECTS), cls="project-grid"),
         title="Projects",
     )

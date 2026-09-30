@@ -1,24 +1,277 @@
-"""Public project descriptions and self-authored product illustrations."""
+"""Project descriptions, recorded measurements and labelled authored illustrations."""
 
-from fasthtml.common import *
 import json
 from pathlib import Path
 
+from fasthtml.common import *
+from project_examples import CAREER_STEPS, QWEN_STEPS, SAMPLE_STEPS, STORY_CONTEXT, STORY_REPLY
+
 PROSE_STUDY = json.loads((Path(__file__).parent / "assets/data/storyteller-prose-results.json").read_text())
+CAREER_REPO = "https://github.com/russedavid/career-workbench"
+QWEN_REPO = "https://github.com/russedavid/qwen-ttrpg"
+DATASET_REPO = "https://github.com/russedavid/format_conversation_dataset"
+STORY_REPO = "https://github.com/russedavid/story-copilot"
+OTSC_REPO = "https://github.com/russedavid/over-the-shoulder"
+FRONTLINE_REPO = "https://github.com/russedavid/report-generator"
+
+FRONTLINE = {
+    "slug": "frontline", "title": "Frontline", "status": "Hosted demo",
+    "description": "Draft maintenance reports from field notes, recordings and photos. Review the source for a finding, check applicable equipment guidance, and distinguish a completed repair from a suggested next step.",
+    "stack": "FastHTML · Groq · SQLite FTS5 / BM25",
+}
+OTSC = {
+    "slug": "otsc", "title": "Over The Shoulder", "status": "macOS application",
+    "description": "Get help while working in an editor, cloud console or browser terminal. The app reads the screen and listens to the conversation, then proposes code, explanations or diagrams. You operate the tools and apply the changes.",
+    "stack": "Python / AppKit · Screen and audio processing",
+}
+CAREER_WORKBENCH = {
+    "slug": "career-workbench", "title": "Career Workbench", "status": "Local web application",
+    "description": "Work through career research and resume drafts with an agent that can ask follow-up questions and use saved evidence. Correct a source account and see which claims and profiles need another review.",
+    "stack": "FastHTML · Codex / MCP · SQLite · Typst",
+}
+QWEN_TTRPG = {
+    "slug": "qwen-ttrpg", "title": "Qwen training tools", "status": "Local GPU training and serving",
+    "description": "Prepare conversational training data, train task-specific LoRAs, and compare them with the base model. I use these tools for Story Copilot on two RTX 3090s; the repos support running the same process with your own data.",
+    "stack": "PyTorch · QLoRA / FSDP2 · llama.cpp",
+}
+STORY_COPILOT = {
+    "slug": "story-copilot", "title": "Story Copilot", "status": "Local web application",
+    "description": "Suggest the game facilitator’s next reply using the conversation, scenario and character sheets. It can look up an earlier exchange or a supplied rule before answering. Suggestions stay private and do not become recorded events.",
+    "stack": "Local models · Evidence tools · Conversation memory",
+}
+PROJECTS = [FRONTLINE, OTSC, CAREER_WORKBENCH, QWEN_TTRPG, STORY_COPILOT]
+
+
+def detail_row(title, text):
+    return Div(H3(title), P(text), cls="decision-row")
+
+
+def preview_line(label, text):
+    return Div(Span(label, cls="state-label"), P(text), cls="report-line")
 
 
 def training_feature():
     return Section(
-        Div(P("From the model workshop", cls="eyebrow"),
-            H2("Fine-tuning, measured against the task."),
-            P("I built the path from reviewed conversations to a working local model: data preparation, adapter training, evaluation, and an application that uses the result."),
-            A("Read the experiment →", href="/projects/qwen-ttrpg#prose-study", cls="text-link")),
-        Div(
-            Div(Strong("1,250"), Span("reviewed training exchanges")),
-            Div(Strong("27B"), Span("parameters in the shared base")),
-            Div(Strong("80"), Span("validation and test scenarios")),
-            cls="study-stats"),
-        cls="training-feature", aria_label="Latest model training and evaluation work",
+        Div(P("Model training", cls="eyebrow"), H2("Fine-tuning the Story Copilot model"),
+            P("For Story Copilot, I trained a model to respond to players in a tabletop game. It needs to answer their questions, remember who knows what, and leave their decisions to them."),
+            P("The latest adapter wrote much shorter replies, but did not clearly beat the base model on the separate test. The write-up covers the data, training setup, comparison and remaining failures."),
+            A("Read the training results →", href="/projects/qwen-ttrpg#prose-study", cls="text-link")),
+        Div(Div(Strong("1,250"), Span("reviewed training exchanges")),
+            Div(Strong("27B"), Span("parameters in the base model")),
+            Div(Strong("2 × 3090"), Span("local training hardware")), cls="study-stats"),
+        cls="training-feature", aria_label="Story Copilot fine-tuning experiment",
+    )
+
+
+def frontline_preview():
+    return Div(
+        Div(Span("FRONTLINE", cls="preview-brand"), Span("Authored report excerpt", cls="preview-label"), cls="preview-bar"),
+        Div(P("Intermittent gateway outage", cls="report-heading"),
+            preview_line("WORK", "Reseated the DC connector. The spare supply was not installed."),
+            preview_line("CHECK", "216 queued readings uploaded; reporting continued during a five-minute check."),
+            preview_line("FOLLOW-UP", "Verify the supply rating. The photographed label is unreadable."),
+            P("The work order requested a replacement; the visit note says it did not happen.", cls="preview-footnote"), cls="report-paper"),
+        cls="project-preview", aria_label="Authored maintenance example with a requested replacement that was not performed",
+    )
+
+
+def otsc_preview():
+    return Div(
+        Div(Span("OVER THE SHOULDER", cls="preview-brand"), Span("Authored task excerpt", cls="preview-label"), cls="preview-bar"),
+        Div(P("Changing a webhook retry policy", cls="report-heading"),
+            preview_line("SCREEN", "A worker retries responses with status >= 500."),
+            preview_line("AUDIO", "“Handle 429 too. Honor Retry-After, but stop if it exceeds ten seconds.”"),
+            preview_line("PROPOSAL", "Preserve replay safety and retry limits. A long server delay leaves the item queued."),
+            P("The walkthrough shows the code change and the cases it must handle.", cls="preview-footnote"), cls="report-paper"),
+        cls="project-preview", aria_label="Authored screen-and-conversation example about retry timing and replay safety",
+    )
+
+
+def career_preview():
+    return Div(
+        Div(Span("CAREER WORKBENCH", cls="preview-brand"), Span("Fictional account", cls="preview-label"), cls="preview-bar"),
+        Div(P("Who changed the returns process?", cls="report-heading"),
+            preview_line("ACCOUNT", "“I built the intake form and tracker across three branches.”"),
+            preview_line("CORRECTION", "“Finance also added an approver. The timing figures were estimates.”"),
+            preview_line("DRAFT", "Describe the process and coordination work; omit the unsupported speed claim."),
+            cls="report-paper"), cls="project-preview career-preview",
+        aria_label="Fictional career example separating a person's contribution from a team timing estimate",
+    )
+
+
+def qwen_preview():
+    test = PROSE_STUDY["splits"]["test"]
+    return Div(
+        Div(Span("QWEN TRAINING", cls="preview-brand"), Span("Recorded test result", cls="preview-label"), cls="preview-bar"),
+        Div(P("Base model vs. prose adapter", cls="report-heading"),
+            preview_line("BASE", f"{test['arms']['base']['outcomes']['pass']} pass · 8 fail · 5 uncertain"),
+            preview_line("ADAPTER", f"{test['arms']['s1250']['outcomes']['pass']} pass · 9 fail · 1 uncertain"),
+            preview_line("PREFERENCE", "19 for each model, with 2 ties."),
+            P("40 cases, one response per model per case. Assistant judgments; no human calibration.", cls="preview-footnote"), cls="report-paper"),
+        cls="project-preview", aria_label="Actual 40-case test comparison; no clear preference for the fine-tuned model",
+    )
+
+
+def story_preview():
+    return Div(
+        Div(Span("STORY COPILOT", cls="preview-brand"), Span("Authored scene excerpt", cls="preview-label"), cls="preview-bar"),
+        Div(P("At the harbor signal station", cls="report-heading"),
+            preview_line("INEZ", "Questions Ada about a ferry departure. Keeps a private note to herself."),
+            preview_line("BRAM", "Checks the view of the workshop from the doorway; stays outside."),
+            preview_line("REPLY", "Give Ada an answer and Bram an observation, without disclosing the note or moving him inside."),
+            cls="report-paper"), cls="project-preview", aria_label="Authored scene with two player requests and separate character knowledge",
+    )
+
+
+def project_card(project):
+    previews = {"frontline": frontline_preview, "otsc": otsc_preview, "career-workbench": career_preview,
+                "qwen-ttrpg": qwen_preview, "story-copilot": story_preview}
+    return Article(
+        Div(P(project["status"], cls="project-status"),
+            H3(A(project["title"], href=f"/projects/{project['slug']}")),
+            P(project["description"], cls="project-description"),
+            P(project["stack"], cls="project-stack"), cls="project-copy"),
+        previews[project["slug"]](),
+        Div(A("How it works →", href=f"/projects/{project['slug']}", cls="text-link"), cls="project-card-link"),
+        cls="project-card",
+    )
+
+
+def project_section():
+    return Section(
+        Div(H2("Projects"), A("All project pages →", href="/projects", cls="text-link"), cls="section-heading"),
+        P("Applications and model tools I’m building. Each page explains the implementation, shows an example, and links the code and evaluation findings.", cls="project-section-intro"),
+        Div(*(project_card(project) for project in PROJECTS), cls="project-grid"), id="selected-work",
+    )
+
+
+def frontline_page():
+    return (
+        A("← All projects", href="/projects", cls="back-link"),
+        Section(P("Frontline / Hosted demo", cls="eyebrow"), H1("Maintenance reports from notes, photos and recordings"),
+            P("A technician’s notes mix symptoms, work performed and things to check next time. Frontline assembles a report from that material and lets the reviewer inspect the sources. It also retrieves applicable equipment guidance without treating the manual as evidence that a repair happened.", cls="project-lede"),
+            Div(A("Open the demo ↗", href="https://davidrussell.alwaysdata.net", cls="button-link"), A("Source code ↗", href=FRONTLINE_REPO, cls="text-link"), cls="actions"),
+            P(FRONTLINE["stack"], cls="project-stack"), cls="project-hero"),
+        Section(P("Example visit", cls="eyebrow"), H2("The work order and the visit note disagree"),
+            P("The work order requests a power-supply replacement for an intermittently offline gateway. The technician returns with these records:"),
+            Dl(Dt("Work order"), Dd("Replace the gateway power supply; inspect the intermittent outage."),
+               Dt("Voice note · 09:18"), Dd("Reseated the DC connector. The gateway came back and uploaded 216 queued readings. Brought a spare supply but did not install it."),
+               Dt("Follow-up note · 09:23"), Dd("Readings continued at the expected one-minute interval during the five-minute check. Verify the existing supply rating before choosing a replacement."),
+               Dt("Photo description"), Dd("The gateway is identified as a Raspberry Pi 4. The supply label is too worn to read its rating."), cls="example-sources"),
+            frontline_preview(),
+            P("The report can describe the reconnection and the short observation period. It cannot conclude that the supply was replaced, that its rating is correct, or that the outage is permanently resolved."),
+            P("Authored scenario and report excerpt, not output from a recorded application run.", cls="small-note"), cls="case-section"),
+        Section(H2("How the report is assembled"),
+            detail_row("Prepare the inputs", "Audio and image interpretation become reviewable source material alongside written notes. The report saves the exact source snapshot used for that attempt, so later edits do not rewrite its history."),
+            detail_row("Select references", "SQLite FTS5 and BM25 rank passages from a small equipment library. Model, revision and access filters run before selection. Reference guidance is stored separately from the technician’s observations and completed work."),
+            detail_row("Check the draft", "The app checks required fields and source references. A separate review looks for interpretation errors: an action filed under the wrong section, an unsupported quantity, or a cited passage that does not support the sentence."),
+            detail_row("Keep the hosted demo usable", "Uploads, requests and storage are bounded. Visitor workspaces are isolated, and saved work survives process restarts. The demo uses alwaysdata and Groq."), cls="case-section"),
+        Section(H2("What the development evaluation found"),
+            P("Reviewing 20 authored cases found that reports sometimes described proposed work as completed work. Revised instructions raised assistant-reviewed passes from 12/20 to 18/20 on the same development cases. Two interpretation errors remained."),
+            P("A separate retrieval study checked whether the selected passage applied to the equipment in the notes. The revised policy found a relevant top passage in 12/12 answerable cases and abstained in eight unsupported cases, but extra passages still introduced irrelevant material. These are small development studies with assistant judgments, not independently measured customer outcomes."),
+            Div(A("Report evaluation ↗", href=FRONTLINE_REPO + "/blob/main/docs/evaluation-method.md", cls="text-link"),
+                A("Retrieval comparison ↗", href=FRONTLINE_REPO + "/blob/main/docs/reference-retrieval.md", cls="text-link"), cls="actions"), cls="case-section"),
+    )
+
+
+def otsc_walkthrough(step=0):
+    item = SAMPLE_STEPS[step]
+    return Div(
+        Div(*(A(state["label"], href=f"/projects/otsc?step={i}#walkthrough", hx_get=f"/projects/otsc/walkthrough/{i}",
+                hx_target="#otsc-walkthrough", hx_swap="outerHTML", cls="walkthrough-step selected" if i == step else "walkthrough-step",
+                aria_current="step" if i == step else None) for i, state in enumerate(SAMPLE_STEPS)),
+            cls="walkthrough-controls", role="group", aria_label="Retry-policy changes"),
+        Div(Div(P("Screen and conversation", cls="eyebrow"), Pre(item["input"], cls="sample-input"),
+                H3(item["status"]), P(item["decision"]), H4("Expected behavior"), Ul(*(Li(c) for c in item["checks"])), cls="sample-context"),
+            Div(Div(Span(item["version"], cls="preview-brand"), cls="preview-bar"), Pre(Code(item["code"]), cls="sample-code"),
+                P("Python policy helper. The worker supplies parsed header values and owns cancellation, queue persistence and the total time budget. This is not a complete HTTP retry client.", cls="small-note"),
+                P("Comments explain the decisions. The desktop app also provides a clean copy without teaching comments.", cls="small-note"), cls="sample-artifact"),
+            cls="walkthrough-body", aria_live="polite"), id="otsc-walkthrough", cls="walkthrough",
+    )
+
+
+def otsc_page(step=0):
+    return (
+        A("← All projects", href="/projects", cls="back-link"),
+        Section(P("Over The Shoulder / macOS", cls="eyebrow"), H1("An assistant that follows your screen and conversation"),
+            P("OTSC helps while you work in an editor, cloud console or browser-based SSH session. It reads screenshots and listens to separate microphone and system-audio channels, then suggests code, explanations, diffs or diagrams. You continue to operate the tools; the assistant does not need access to the remote machine’s shell or files.", cls="project-lede"),
+            Div(A("View the example ↓", href="#walkthrough", cls="button-link"), A("Source code ↗", href=OTSC_REPO, cls="text-link"), cls="actions"),
+            P(OTSC["stack"], cls="project-stack"), cls="project-hero"),
+        Section(H2("How OTSC handles a changing retry policy"),
+            P("A colleague adds a requirement while you are editing a webhook worker. The assistant needs to incorporate it without losing the earlier safety constraint. Step through the conversation and resulting code proposal."),
+            otsc_walkthrough(step),
+            P("Authored illustration, informed by the app’s task-continuity tests. The code is checked locally; these are not recorded model responses. This page captures no screen or audio and makes no model calls.", cls="small-note"), cls="case-section", id="walkthrough"),
+        Section(H2("Capture and answers run independently"),
+            P("Screen reading and audio transcription continue while an answer is being generated. A context worker records new constraints, resolves corrections and keeps track of visible code fragments. The answer uses a fixed snapshot of that context."),
+            P("When the task changes, a planning pass can change the output sections: code and an explanation for one task, a checklist or diagram for another. Repeated observations that add no useful information should keep the existing answer. You can hold an older artifact on screen while capture continues."),
+            detail_row("Code read from a screenshot", "The app keeps the excerpt, its source observation and known line positions. A spoken description cannot establish file contents. If you explicitly connect a local project, verified file snapshots provide a stronger basis for diffs."),
+            detail_row("A proposed edit", "The host calculates the diff against the observed or selected source. It shows what would be added or removed without applying the edit. Missing optional file metadata should not discard an otherwise useful answer."),
+            detail_row("Questions from another person", "A question about replay safety belongs in the task, even if it comes from system audio. Channel labels help distinguish participants, but are not proof of speaker identity."), cls="case-section"),
+        Section(H2("A source-mapping failure found by evaluation"),
+            P("In the native workflow study, OCR read a function correctly but included the editor’s line-number gutter. The context worker returned the code without those numbers. A literal-source check rejected the mismatch, so the user received a code proposal without its companion diff."),
+            P("The fix records exact source regions and derives code and line positions from the gutter. A fresh replay recovered the observed file and diff for both failing screenshots. Those were two synthetic screens; they do not establish general OCR accuracy."),
+            P("The same workflow study exercised changing requirements, another participant’s question, duplicate suppression and a delayed answer arriving after a task reset. It also distinguished an answer being generated from that answer becoming visible in the currently selected pane."),
+            Div(A("Workflow findings ↗", href=OTSC_REPO + "/blob/main/docs/task-continuity-results.md", cls="text-link"),
+                A("Source-mapping fix ↗", href=OTSC_REPO + "/blob/main/docs/ocr-source-mapping.md", cls="text-link"), cls="actions"), cls="case-section"),
+        Section(H2("Desktop controls"),
+            P("The output pane can stay visible with a nearly transparent background and opaque text. Click-through, history controls and an optional MIDI keypad let you move through suggestions without taking over normal keyboard shortcuts."),
+            A("Controller mappings and firmware ↗", href="https://github.com/russedavid/k0-max-midi", cls="text-link"), cls="case-section"),
+    )
+
+
+def career_walkthrough(step=0):
+    state = CAREER_STEPS[step]
+    return Div(
+        Div(*(A(item["label"], href=f"/projects/career-workbench?step={i}#walkthrough", hx_get=f"/projects/career-workbench/walkthrough/{i}",
+                hx_target="#career-walkthrough", hx_swap="outerHTML", cls="walkthrough-step selected" if i == step else "walkthrough-step",
+                aria_current="step" if i == step else None) for i, item in enumerate(CAREER_STEPS)),
+            cls="walkthrough-controls", role="group", aria_label="Fictional returns-coordinator account and correction"),
+        Div(Div(P("Source account", cls="eyebrow"), Blockquote(state["source"]), H3(state["status"]), P(state["decision"]), cls="sample-context"),
+            Div(P(state["version"], cls="preview-brand"),
+                P(state["claim"], cls="career-example-claim" + (" historical-claim" if step == 1 else "")),
+                Ul(*(Li(fact) for fact in state["facts"])), P(state["note"], cls="small-note"), cls="sample-artifact career-artifact"),
+            cls="walkthrough-body", aria_live="polite"), id="career-walkthrough", cls="walkthrough",
+    )
+
+
+def career_page(step=0):
+    return (
+        A("← All projects", href="/projects", cls="back-link"),
+        Section(P("Career Workbench / Local web application", cls="eyebrow"), H1("Career research and resume drafting in a local workspace"),
+            P("Career Workbench helps a person recover experience, compare career directions and write resumes from a saved record of their work. The agent can ask follow-up questions, inspect sources, edit claims and render a profile. The same records are editable in the browser.", cls="project-lede"),
+            Div(A("Run the app locally ↗", href=CAREER_REPO + "#run-the-localhost-ui", cls="button-link"), A("Usage guide ↗", href=CAREER_REPO + "/blob/main/docs/usage.md", cls="text-link"), cls="actions"),
+            P(CAREER_WORKBENCH["stack"], cls="project-stack"), cls="project-hero"),
+        Section(H2("An example with shared credit and an uncertain metric"),
+            P("A returns coordinator has a useful process-improvement story, but the first account combines their work with a team timing estimate. The follow-up establishes what they owned and what the numbers can support."),
+            career_walkthrough(step),
+            P("Fixed, self-authored fictional example. It is not a customer record or a recorded model response.", cls="small-note"), cls="case-section", id="walkthrough"),
+        Section(H2("How the agent works with the record"),
+            detail_row("Discovery and research", "The agent uses the current account to choose a follow-up question or an evidence lookup. It can compare possible directions and suggest work to fill a gap. A planned project stays distinct from a demonstrated accomplishment."),
+            detail_row("Corrections", "Sources are preserved. Correcting a claim marks dependent profiles and planning records for review, including indirect dependencies. Previous exports retain the sources and wording they used."),
+            detail_row("Tools and persistence", "Codex provides the model-directed loop. MCP tools are scoped to one workspace; general shell and filesystem access are disabled. Chats, jobs and completed changes persist across browser refreshes and interrupted runs."),
+            detail_row("PDF review", "Typst renders the profile with fixed templates. The app checks text, fonts, metadata, page limits and short wrapped lines. The reviewer can inspect the page and each claim’s source; passing geometry checks does not judge the writing."), cls="case-section"),
+        Section(H2("What has been exercised"),
+            P("Chromium and Firefox checks cover uploads, structured editing, interviews, background rendering and PDF review. Separate live Codex exercises use fictional accounts to inspect tool choices and saved records. They verify an application workflow, not career outcomes."),
+            A("Verification notes ↗", href=CAREER_REPO + "/blob/main/docs/web-verification.md", cls="text-link"), cls="case-section"),
+        Section(H2("Run the localhost UI"),
+            P("With the prerequisites installed, including an already authenticated Codex CLI:"),
+            Pre(Code("git clone https://github.com/russedavid/career-workbench.git\ncd career-workbench\nuv sync --frozen\nuv run career-workbench web"), cls="setup-code"),
+            P("Open http://127.0.0.1:5010, create a workspace and add source material. The app uses the saved Codex login. Relevant context is sent to the selected model; local records and exports stay in a private directory outside the code checkout."), cls="case-section"),
+    )
+
+
+def qwen_walkthrough(step=0):
+    item = QWEN_STEPS[step]
+    return Div(
+        Div(*(A(state["label"], href=f"/projects/qwen-ttrpg?step={i}#walkthrough", hx_get=f"/projects/qwen-ttrpg/walkthrough/{i}",
+                hx_target="#qwen-walkthrough", hx_swap="outerHTML", cls="walkthrough-step selected" if i == step else "walkthrough-step",
+                aria_current="step" if i == step else None) for i, state in enumerate(QWEN_STEPS)),
+            cls="walkthrough-controls", role="group", aria_label="Training context, loss mask and response evaluation"),
+        Div(Div(H3(item["status"]), P(item["description"]),
+                P(item["context_label"], cls="training-label"), Pre(item["context"], cls="sample-input"), cls="sample-context"),
+            Div(Div(P(item["target_label"], cls="training-label"), Pre(item["target"]), cls="training-target"),
+                P(item["note"], cls="small-note"), cls="sample-artifact training-example"), cls="walkthrough-body", aria_live="polite"),
+        id="qwen-walkthrough", cls="walkthrough",
     )
 
 
@@ -26,559 +279,82 @@ def prose_study():
     rows = []
     for split, label in [("validation", "Validation"), ("test", "Separate test")]:
         for arm, name in [("base", "Untuned base"), ("s1250", "1,250-example LoRA")]:
-            result = PROSE_STUDY["splits"][split]["arms"][arm]
-            counts = result["outcomes"]
-            rows.append(Tr(Th(label + " · " + name, scope="row"),
-                           Td(counts["pass"]), Td(counts["fail"]), Td(counts["uncertain"])))
+            counts = PROSE_STUDY["splits"][split]["arms"][arm]["outcomes"]
+            rows.append(Tr(Th(label + " · " + name, scope="row"), Td(counts["pass"]), Td(counts["fail"]), Td(counts["uncertain"])))
     return Section(
-        P("September 2026 / Plain-prose experiment", cls="eyebrow"),
-        H2("Lower loss. Shorter answers. A tied test."),
-        P("The storyteller’s job is to answer the players and carry the scene forward. I removed the structured-output requirement from that task and kept state extraction in a separate model call. Then I rebuilt the training data and evaluation around the prose we actually wanted."),
-        P("A fresh QLoRA run used 1,250 reviewed exchanges and finished in 4 hours 39 minutes on two 24 GB GPUs. The data checks bound each review to its source and target, excluded overlapping response spans, and verified the model’s native token boundaries and completion-only loss mask."),
-        Div(Table(Caption("40 cases per split; one response from each model per case"),
+        H2("Results of the 1,250-example run"),
+        P("The latest run trained a fresh prose adapter for 4 hours 39 minutes on two 24 GB GPUs. I compared it with the untuned base on 40 validation cases, then a separate 40-case test. Each model produced one answer per case."),
+        P("The adapter was preferred in validation: 24 comparisons to 13, with three ties. On the separate test, preference was tied at 19 each, with two ties. The result did not establish an overall storytelling improvement."),
+        Div(Table(Caption("Assistant-reviewed outcomes · September 2026"),
                   Thead(Tr(Th("Split / model", scope="col"), Th("Pass", scope="col"), Th("Fail", scope="col"), Th("Uncertain", scope="col"))),
                   Tbody(*rows)), cls="results-table"),
-        P("Validation favored the adapter 24–13, with three ties. On the separate test, preference was 19–19 with two ties. Test passes rose from 27 to 30, but definite failures also rose from eight to nine. The gain in pass count does not establish a better storyteller."),
-        P("Validation completion loss fell from 2.608 to 2.017. Median test answers shrank from 159.5 to 18.5 words. Request time fell from 7.47 to 1.90 seconds, largely because there was much less to generate. The model took over player decisions less often, but omitted requested help more often. Cleaner prose sometimes became an incomplete answer."),
-        P("All 80 scenarios were audited and independently cross-reviewed with Astra High. The final answer comparisons were model-judged with candidate identities hidden, without human calibration or a fresh independent reference-blind judge. Four source families, correlated cases, and one generation per case limit the conclusion. This study evaluates the writer, not the live audio pipeline."),
-        P("The adapter remains experimental. It is now available in the private copilot for a deliberate interactive trial, alongside separate state, rules, and player adapters. Selecting it for a trial is not a claim that it outperformed the base."),
-        A("Inspect the aggregate results ↗", href="/public/data/storyteller-prose-results.json", cls="text-link"),
+        P("The replies became much shorter: a median of 18.5 words on the test, compared with 159.5 from the base. Some improved by dropping unnecessary narration. Others lost part of the player’s request. Definite failures rose from eight to nine, even as the number of passes increased."),
+        P("Median generation time fell from 7.47 to 1.90 seconds, largely because there was less text to generate. Validation loss also fell, from 2.608 to 2.017. Neither measurement resolves whether a person would find the next reply useful. The adapter remains experimental and is available in the private application for hands-on testing."),
+        Details(Summary("Review method and limits"),
+            P("Review checked whether the answer addressed the current request, preserved established facts and uncertainty, respected player choices and handled mechanics appropriately. A consistent new fictional detail was allowed; reproducing the reference continuation was not required."),
+            P("All 80 scenarios were audited and independently cross-reviewed using Astra High before the run. The final answer reviewer was an assistant, with model identities hidden until each split’s grades were saved. It had previously seen reference continuations, so this was not a fully independent assessment. No human calibration was performed."),
+            P("The cases come from four source families and include related characters and situations. There was one generation per case. This measures the writer with prepared context, not transcription accuracy or the complete live copilot."),
+            A("Aggregate measurements ↗", href="/public/data/storyteller-prose-results.json", cls="text-link")),
         cls="case-section", id="prose-study",
-    )
-
-FRONTLINE = {
-    "slug": "frontline", "title": "Frontline", "status": "Live web demo",
-    "tagline": "Maintenance reports with a paper trail.",
-    "description": "Turn notes, recordings, and photos into a maintenance report that keeps observations, completed work, and next steps distinct.",
-    "stack": "Multimodal inputs / Retrieval / Evidence review",
-}
-PROJECTS = [FRONTLINE]
-
-
-def frontline_preview():
-    return Div(
-        Div(Span("FRONTLINE", cls="preview-brand"), Span("Example report", cls="preview-label"), cls="preview-bar"),
-        Div(P("Gateway inspection", cls="report-heading"),
-            Div(Span("COMPLETED", cls="state-label"), P("Reseated the power cable."), cls="report-line"),
-            Div(Span("OBSERVED", cls="state-label"), P("Gateway back online."), cls="report-line"),
-            Div(Span("UNKNOWN", cls="state-label muted"), P("Power supply rating."), cls="report-line"),
-            P("Every claim has a source. Missing facts stay missing.", cls="preview-footnote"), cls="report-paper"),
-        cls="project-preview frontline-preview", aria_label="Illustrative Frontline report separating completed work, observations, and unknown values",
-    )
-
-
-def project_card(project):
-    preview = {"frontline": frontline_preview, "otsc": otsc_preview, "career-workbench": career_preview, "qwen-ttrpg": qwen_preview, "story-copilot": story_preview}
-    return Article(
-        preview[project["slug"]](),
-        Div(P(project["status"], cls="project-status"), H3(A(project["title"], href=f"/projects/{project['slug']}")),
-            P(project["tagline"], cls="project-tagline"), P(project["description"], cls="project-description"),
-            P(project["stack"], cls="project-stack"), A("Explore the project →", href=f"/projects/{project['slug']}", cls="text-link"),
-            cls="project-copy"), cls="project-card",
-    )
-
-
-def project_section():
-    return Section(
-        Div(H2("Selected work"), A("All projects →", href="/projects", cls="text-link"), cls="section-heading"),
-        Div(*(project_card(project) for project in PROJECTS), cls="project-grid"), id="selected-work",
-    )
-
-
-def detail_row(title, text):
-    return Div(H3(title), P(text), cls="decision-row")
-
-
-def frontline_page():
-    return (
-        A("← All projects", href="/projects", cls="back-link"),
-        Section(
-            P("Frontline / Live web demo", cls="eyebrow"),
-            H1("A maintenance report should never invent a repair."),
-            P("A planned replacement is not a completed repair. An unreadable label is not a known specification. Frontline turns field evidence into a report while keeping those distinctions visible.", cls="project-lede"),
-            Div(A("Try Frontline ↗", href="https://davidrussell.alwaysdata.net", cls="button-link"),
-                A("View source ↗", href="https://github.com/russedavid/report-generator", cls="text-link"), cls="actions"),
-            P("Python · FastHTML · HTMX · SQLite FTS5 · Groq", cls="project-stack"), cls="project-hero",
-        ),
-        Section(
-            Div(P("THE INPUT", cls="eyebrow"), H2("Field notes, in their own words."),
-                Blockquote('“Pi 4 gateway offline. Reseated the power cable; back online. Supply label is unreadable. Check the supply on the next visit.”'),
-                P("The source records a cable adjustment and a recovery. It does not establish that the power supply was replaced—or even what its rating is.", cls="muted"),
-                P("Self-authored example illustrating the report structure.", cls="small-note")),
-            frontline_preview(), cls="example-grid",
-        ),
-        Section(
-            P("THE WORKFLOW", cls="eyebrow"), H2("From evidence to a reviewable report."),
-            Ol(
-                Li(Strong("Collect the evidence."), " Add written notes, recordings, and equipment photos to a workspace."),
-                Li(Strong("Find applicable guidance."), " Match manufacturer references to the equipment model and revision. Keep that guidance separate from recorded work."),
-                Li(Strong("Draft with sources."), " Preserve unknowns and disagreements, attach source references, and separate completed actions from proposals."),
-                Li(Strong("Review the result."), " Inspect the evidence beside the report and keep reviewer notes separate from generated findings."),
-                cls="workflow-list",
-            ), cls="case-section",
-        ),
-        Section(
-            P("ENGINEERING DECISIONS", cls="eyebrow"), H2("The source matters as much as the sentence."),
-            detail_row("Evidence that stays put", "A report keeps an immutable source snapshot. Later edits to the workspace do not silently change what an earlier report was based on."),
-            detail_row("Retrieval with boundaries", "SQLite FTS5 and BM25 provide a small lexical index. Model, revision, and access checks decide which references are eligible before they reach the model."),
-            detail_row("Quality beyond valid JSON", "Structural checks catch malformed fields and invalid source references. Separate trace review looks for invented work, unsupported quantities, and claims the cited passage does not support."),
-            detail_row("A demo that can be operated", "Visitor workspaces are isolated, uploads and requests are bounded, and saved work survives process restarts. The public demo runs on alwaysdata with Groq inference."),
-            cls="case-section",
-        ),
-        Section(
-            P("EVALUATION", cls="eyebrow"), H2("Make the failures inspectable."),
-            P("The development corpus contains 20 synthetic cases. Reviewing paired outputs exposed errors such as moving proposed work into the completed-work section. Revised instructions improved assistant-reviewed passes from 12/20 to 18/20 on those same development examples."),
-            P("Those are provisional assistant judgments on a small development set, not human-calibrated accuracy or a customer outcome. The source repository retains the comparisons and remaining failures.", cls="small-note"),
-            Div(A("Read the evaluation method ↗", href="https://github.com/russedavid/report-generator/blob/main/docs/evaluation-method.md", cls="text-link"),
-                A("Inspect the retrieval study ↗", href="https://github.com/russedavid/report-generator/blob/main/docs/reference-retrieval.md", cls="text-link"), cls="actions"),
-            cls="case-section",
-        ),
-        Div(H2("Try a report with its sources attached."),
-            P("Open the demo and choose an example, or bring your own notes."),
-            A("Open Frontline ↗", href="https://davidrussell.alwaysdata.net", cls="button-link"), cls="project-outro"),
-    )
-
-OTSC = {
-    "slug": "otsc", "title": "Over The Shoulder Coder", "status": "Mac desktop app · In development",
-    "tagline": "An AI collaborator for work in progress.",
-    "description": "Follow the screen and the conversation, keep track of changing requirements, and propose code, explanations, diffs, or designs.",
-    "stack": "Continuous context / Structured outputs / Native controls",
-}
-PROJECTS.append(OTSC)
-
-
-def otsc_preview():
-    return Div(
-        Div(Span("OTSC", cls="preview-brand"), Span("Illustrative task view", cls="preview-label"), cls="preview-bar"),
-        Div(Div(Span("Code", cls="mini-tab selected"), Span("Explanation", cls="mini-tab"), Span("Changes", cls="mini-tab"), cls="mini-tabs"),
-            P("Handle the empty case. Keep fractional results.", cls="task-brief"),
-            Pre(Code("def average(values):\n    if not values:\n        return 0\n    return sum(values) / len(values)")),
-            P("A useful answer. Room for the next requirement.", cls="preview-footnote"), cls="assistant-paper"),
-        cls="project-preview otsc-preview", aria_label="Illustrative OTSC view with task context and a proposed average function",
-    )
-
-
-SAMPLE_STEPS = (
-    {
-        "label": "1. Initial task", "version": "Code · version 1", "status": "New proposal",
-        "input": "You: An empty list should return zero.\nOther participant: Keep fractional averages; don't round them.",
-        "decision": "Add an empty-input guard while keeping ordinary division. The other participant's constraint belongs in the implementation.",
-        "code": "# Compute an average without losing fractional results.\ndef average(values):\n    # Handle the empty list before dividing.\n    if not values:\n        # The requested value for an empty input is zero.\n        return 0\n    # Ordinary division preserves fractional averages.\n    return sum(values) / len(values)",
-    },
-    {
-        "label": "2. New requirement", "version": "Code · version 2", "status": "Proposal revised",
-        "input": "You: Some readings are None. Ignore those.\nOther participant: A real zero still needs to count.",
-        "decision": "Exclude only None, so valid zero readings remain in the average. The existing empty-input behavior also covers an all-missing list.",
-        "code": "# Average the available readings, including real zeros.\ndef average(values):\n    # Exclude missing readings without dropping zero.\n    samples = [v for v in values if v is not None]\n    # Check whether any usable readings remain.\n    if not samples:\n        # Keep the agreed empty-input result.\n        return 0\n    # Divide by the number of available readings.\n    return sum(samples) / len(samples)",
-    },
-    {
-        "label": "3. No new information", "version": "Code · version 2", "status": "Current output retained",
-        "input": "Screen: The same code is still visible.\nOther participant: Okay, that makes sense.",
-        "decision": "No new requirement, unanswered question, or meaningful code change. Keep version 2 visible instead of generating another answer or history entry.",
-    },
-)
-
-
-def otsc_walkthrough(step=0):
-    item = SAMPLE_STEPS[step]
-    return Div(
-        Div(*(A(state["label"], href=f"/projects/otsc?step={index}#walkthrough",
-                hx_get=f"/projects/otsc/walkthrough/{index}", hx_target="#otsc-walkthrough", hx_swap="outerHTML",
-                cls="walkthrough-step selected" if index == step else "walkthrough-step",
-                aria_current="step" if index == step else None) for index, state in enumerate(SAMPLE_STEPS)),
-            cls="walkthrough-controls", role="group", aria_label="Sample session stages"),
-        Div(
-            Div(P("WHAT CHANGED", cls="eyebrow"), Pre(Code(item["input"]), cls="sample-input"),
-                H3(item["status"]), P(item["decision"]), cls="sample-context"),
-            Div(Div(Span(item["version"], cls="preview-brand"), Span("Proposed code", cls="preview-label"), cls="preview-bar"),
-                Pre(Code(item.get("code", SAMPLE_STEPS[1]["code"])), cls="sample-code"),
-                P("Teaching comments explain the proposal; the desktop app also offers clean copy.", cls="small-note"),
-                cls="sample-artifact"), cls="walkthrough-body", aria_live="polite",
-        ), id="otsc-walkthrough", cls="walkthrough",
-    )
-
-
-def otsc_page(step=0):
-    return (
-        A("← All projects", href="/projects", cls="back-link"),
-        Section(
-            P("Over The Shoulder Coder / Mac desktop app", cls="eyebrow"),
-            H1("An AI collaborator for work in progress."),
-            P("The code is on your screen. A requirement comes up in conversation. Someone challenges an assumption. OTSC brings those signals into one evolving task and helps create the next version of the work.", cls="project-lede"),
-            Div(A("Explore a sample session ↓", href="#walkthrough", cls="button-link"),
-                A("View source ↗", href="https://github.com/russedavid/over-the-shoulder", cls="text-link"),
-                A("See the controller firmware ↗", href="https://github.com/russedavid/k0-max-midi", cls="text-link"), cls="actions"),
-            P("Python · AppKit · Screen and audio context · Model orchestration", cls="project-stack"),
-            cls="project-hero",
-        ),
-        Section(
-            P("FOLLOW THE TASK", cls="eyebrow"), H2("New information earns a new answer."),
-            P("Step through a small coding task. A new requirement changes the proposal; a repeated screen and an acknowledgment do not."),
-            otsc_walkthrough(step),
-            P("Interactive illustration with fixed, self-authored inputs and responses. This page does not run the desktop app, capture your screen or audio, or call a model.", cls="small-note"),
-            cls="case-section", id="walkthrough",
-        ),
-        Section(
-            P("THE SYSTEM", cls="eyebrow"), H2("Keep context moving. Keep output under control."),
-            Div(
-                Div(Span("01", cls="flow-number"), Strong("Observe"), P("Screen readings + separate microphone and system-audio transcripts")),
-                Div(Span("02", cls="flow-number"), Strong("Build context"), P("Source-linked notes, constraints, and observed file fragments")),
-                Div(Span("03", cls="flow-number"), Strong("Review the task"), P("Decide whether to answer and whether the output plan needs to change")),
-                Div(Span("04", cls="flow-number"), Strong("Propose"), P("Quick guidance, then deeper code, diffs, explanations, or images")),
-                cls="context-flow",
-            ),
-            P("Screen reading, transcription, and context building run independently. Each answer uses a fixed snapshot, so late work cannot overwrite a different task. Browsing an older artifact freezes that view without freezing the rest of the system."),
-            cls="case-section",
-        ),
-        Section(
-            P("ENGINEERING DECISIONS", cls="eyebrow"), H2("Useful assistance has to respect what it knows."),
-            detail_row("An observed fragment stays a fragment", "Visible code, spoken descriptions, inferred notes, and verified files are different evidence. The app preserves their sources and completeness instead of inventing a full repository from a screenshot."),
-            detail_row("The task chooses the output", "A planning pass defines the instructions and named output sections. An algorithm might need code and complexity analysis; a design task might need an image and component explanations. Meaningful task changes can revise that structure."),
-            detail_row("Proposals you can inspect", "Source-backed diffs show current and proposed code with line numbers. Teaching comments stay separate from clean copy. The app proposes changes; it does not apply them to your project."),
-            detail_row("Conversation affects the work", "Questions and suggestions from other people can change the artifact or warrant a reply. Microphone and system audio remain separate channels; those channel roles are context cues, not verified voice identification."),
-            detail_row("Controls that leave your shortcuts alone", "A MIDI keypad handles history, output types, capture, and window placement without taking over editor shortcuts. Click-through makes the pane background transparent while keeping its text readable."),
-            cls="case-section",
-        ),
-        Section(
-            P("RELIABILITY WORK", cls="eyebrow"), H2("A good draft is no use if it never arrives."),
-            P("Recorded-input evaluation exposed a delivery defect: optional file metadata could cause an otherwise usable answer to be discarded. Separating those validation paths made all 18 stored deep drafts deliverable, up from 9, with their original code preserved."),
-            P("That comparison measures delivery behavior, not whether every answer was correct. Perception, task understanding, and usefulness are evaluated separately, with source media, rejected drafts, and provisional reference answers available in the local review interface."),
-            P("A later 48-trial planning experiment tested combining context building and plan review. It reduced model calls but made fresh answers slower when the background worker was busy. The independent architecture remains the default."),
-            cls="case-section",
-        ),
-        Div(
-            H2("Built around the work already in front of you."),
-            P("OTSC is an actively developed Mac desktop application. Its source is public; recorded evaluation traces remain private."),
-            Div(A("Revisit the sample session ↑", href="#walkthrough", cls="button-link"),
-                A("View source ↗", href="https://github.com/russedavid/over-the-shoulder", cls="text-link"),
-                A("Explore the MIDI firmware ↗", href="https://github.com/russedavid/k0-max-midi", cls="text-link"), cls="actions"),
-            cls="project-outro",
-        ),
-    )
-
-CAREER_WORKBENCH = {
-    "slug": "career-workbench", "title": "Career Workbench", "status": "Local web app · Source available",
-    "tagline": "A good resume starts before the writing.",
-    "description": "Discover overlooked experience, explore directions, and develop profiles whose claims lead back to the original evidence.",
-    "stack": "Agentic discovery / Persistent evidence / Document review",
-}
-PROJECTS.append(CAREER_WORKBENCH)
-CAREER_REPO = "https://github.com/russedavid/career-workbench"
-
-
-def career_preview():
-    return Div(
-        Div(Span("CAREER WORKBENCH", cls="preview-brand"), Span("Fictional example", cls="preview-label"), cls="preview-bar"),
-        Div(P("A contribution, with its context.", cls="report-heading"),
-            Blockquote('“I helped keep the volunteer schedule up to date. The program lead owned it.”'),
-            P("Supported the weekly volunteer schedule alongside the program lead.", cls="career-example-claim"),
-            P("Shared credit preserved · Original account linked", cls="preview-footnote"), cls="career-paper"),
-        cls="project-preview career-preview", aria_label="Fictional career evidence with shared ownership preserved in the resulting claim",
-    )
-
-
-CAREER_STEPS = (
-    {
-        "label": "1. Original account", "status": "Source recorded", "version": "Working profile · draft 1",
-        "source": "I coordinated the weekly volunteer schedule for the community program.",
-        "claim": "Coordinated the community program’s weekly volunteer schedule.",
-        "decision": "Keep the account and its source link. No measured time saving, budget ownership or program size has been supplied.",
-        "note": "A source link records where a claim came from; it does not independently verify the recollection.",
-    },
-    {
-        "label": "2. Correction", "status": "Dependent draft needs review", "version": "Draft 1 · historical",
-        "source": "I helped keep the schedule up to date. The program lead owned it.",
-        "claim": "Coordinated the community program’s weekly volunteer schedule.",
-        "decision": "Save the correcting words, retire the overbroad claim, and flag profiles that use it. Preserve the earlier PDF and the account it was based on.",
-        "note": "A correction changes the working record; it does not silently rewrite an old export.",
-    },
-    {
-        "label": "3. Revised profile", "status": "Shared contribution retained", "version": "Working profile · draft 2",
-        "source": "I helped keep the schedule up to date. The program lead owned it.",
-        "claim": "Supported the weekly volunteer schedule alongside the program lead.",
-        "decision": "Use the narrower claim in a new draft. Review the wording, inspect the rendered page, and retain both document versions with their source snapshots.",
-        "note": "Technical validation and editorial judgment remain separate. A clean PDF can still contain weak copy.",
-    },
-)
-
-
-def career_walkthrough(step=0):
-    state = CAREER_STEPS[step]
-    return Div(
-        Div(*(A(item["label"], href=f"/projects/career-workbench?step={index}#walkthrough",
-                hx_get=f"/projects/career-workbench/walkthrough/{index}", hx_target="#career-walkthrough", hx_swap="outerHTML",
-                cls="walkthrough-step selected" if index == step else "walkthrough-step",
-                aria_current="step" if index == step else None) for index, item in enumerate(CAREER_STEPS)),
-            cls="walkthrough-controls", role="group", aria_label="Fictional evidence and correction stages"),
-        Div(
-            Div(P("ORIGINAL WORDS", cls="eyebrow"), Blockquote(state["source"]),
-                H3(state["status"]), P(state["decision"]), cls="sample-context"),
-            Div(Div(Span(state["version"], cls="preview-brand"), cls="preview-bar"),
-                P(state["claim"], cls="career-example-claim" + (" historical-claim" if step == 1 else "")),
-                P(state["note"], cls="small-note"), cls="sample-artifact career-artifact"),
-            cls="walkthrough-body", aria_live="polite",
-        ), id="career-walkthrough", cls="walkthrough",
-    )
-
-
-def career_page(step=0):
-    return (
-        A("← All projects", href="/projects", cls="back-link"),
-        Section(
-            P("Career Workbench / Local web application", cls="eyebrow"),
-            H1("A good resume starts before the writing."),
-            P("The useful work is often missing from the first account: an unwritten responsibility, a difficult handoff, a decision that helped someone else deliver. Career Workbench helps recover that experience, understand what it supports, and turn it into a clear professional story.", cls="project-lede"),
-            Div(A("Get the local app ↗", href=CAREER_REPO + "#run-the-localhost-ui", cls="button-link"),
-                A("Read the usage guide ↗", href=CAREER_REPO + "/blob/main/docs/usage.md", cls="text-link"), cls="actions"),
-            P("Python · FastHTML · HTMX · SQLite · Codex app-server · MCP · Typst", cls="project-stack"),
-            cls="project-hero",
-        ),
-        Section(
-            P("THE PRODUCT", cls="eyebrow"), H2("One working record. Several ways forward."),
-            P("Start with notes, a resume or a conversation. The agent can ask a useful follow-up, organize evidence, compare career directions, propose development work, or draft a profile for a particular audience. Direct editors use the same records, so a precise correction does not depend on another model call."),
-            Div(
-                Div(Span("01", cls="flow-number"), Strong("Discover"), P("Recover overlooked work through short, adaptive interviews.")),
-                Div(Span("02", cls="flow-number"), Strong("Make sense of it"), P("Separate contribution, shared credit, outcomes and unknowns.")),
-                Div(Span("03", cls="flow-number"), Strong("Choose a direction"), P("Compare evidence gaps and plan work that demonstrates useful capabilities.")),
-                Div(Span("04", cls="flow-number"), Strong("Compose and review"), P("Develop distinct profiles, inspect their sources and check the actual PDFs.")),
-                cls="context-flow",
-            ), cls="case-section",
-        ),
-        Section(
-            P("FOLLOW THE EVIDENCE", cls="eyebrow"), H2("A correction should travel as far as the claim."),
-            P("Step through a fictional account, its correction and a revised profile. The important behavior is what happens to the records and drafts that depend on it."),
-            career_walkthrough(step),
-            P("Fixed, self-authored fictional example. This illustration contains no personal career records and makes no model calls.", cls="small-note"),
-            cls="case-section", id="walkthrough",
-        ),
-        Section(
-            P("ENGINEERING DECISIONS", cls="eyebrow"), H2("Let the agent reason. Make the record dependable."),
-            detail_row("A frontier model inside a bounded workflow", "Codex supplies the reasoning and tool loop. Workspace-bound MCP tools handle records, corrections and rendering. The host disables general shell and filesystem tools; each conversation resumes its own thread."),
-            detail_row("Facts keep their qualifications", "Original sources remain immutable. Claims retain quotation spans, ownership and limitations. A correction retires the old claim and flags dependent profiles and planning records, while historical exports retain their snapshots."),
-            detail_row("Large histories stay navigable", "The agent starts with an overview and retrieves selected records in bounded pages. It can inspect a claim and its exact source without loading an entire career archive into every response."),
-            detail_row("The rendered page is part of the workflow", "Typst produces tagged PDFs. Checks cover text, metadata, links, fonts, page limits and short wrapped lines; optional bottom-fill and independent PDF/UA validation make additional requirements explicit."),
-            detail_row("Progress survives the page", "Background jobs persist visible events, results and failures. Refreshing the browser does not start another model call. Stop requests interrupt model work while retaining changes already saved."),
-            cls="case-section",
-        ),
-        Section(
-            P("QUALITY", cls="eyebrow"), H2("Passing a check is a beginning."),
-            P("Automated tests exercise source identity, attribution boundaries, corrections, isolated workspaces and document output. Browser checks cover actual forms and review flows in Chromium and Firefox. Separate live exercises use fictional accounts to inspect the agent’s choices and resulting records."),
-            P("A quote can be present in a source without supporting the proposed claim. A valid PDF can still tell an unconvincing story. Editorial review therefore considers relevance, coherence, attribution, scope, copy and geometry separately."),
-            Div(A("Read the verification notes ↗", href=CAREER_REPO + "/blob/main/docs/web-verification.md", cls="text-link"),
-                A("Explore the implementation ↗", href=CAREER_REPO + "/blob/main/docs/design.md", cls="text-link"), cls="actions"),
-            cls="case-section",
-        ),
-        Section(
-            P("USE IT LOCALLY", cls="eyebrow"), H2("Your browser is the interface."),
-            P("With the prerequisites installed—including an already authenticated Codex CLI—clone the repository and start the web app:"),
-            Pre(Code("git clone https://github.com/russedavid/career-workbench.git\ncd career-workbench\nuv sync --frozen\nuv run career-workbench web"), cls="setup-code"),
-            P("Open http://127.0.0.1:5010. Create a workspace, add source material, and start a conversation. The README covers dependencies and model selection; the usage guide walks through discovery, drafting, corrections and PDF review."),
-            P("Records stay in a private local directory outside the code checkout. Agent conversations use the saved Codex CLI login and send relevant context to the selected model. This is a localhost application, not a hosted public demo.", cls="small-note"),
-            cls="case-section",
-        ),
-        Div(H2("Start with the work. Keep the evidence."),
-            P("Explore the fictional examples or bring your own material into a private workspace."),
-            Div(A("View the repository ↗", href=CAREER_REPO, cls="button-link"),
-                A("Read the usage guide ↗", href=CAREER_REPO + "/blob/main/docs/usage.md", cls="text-link"), cls="actions"),
-            cls="project-outro"),
-    )
-
-
-QWEN_REPO = "https://github.com/russedavid/qwen-ttrpg"
-DATASET_REPO = "https://github.com/russedavid/format_conversation_dataset"
-QWEN_TTRPG = {
-    "slug": "qwen-ttrpg", "title": "Qwen TTRPG", "status": "Local model training · Open source tooling",
-    "tagline": "Training an AI to take its turn.",
-    "description": "From source-bound training examples to a 27B local model: supervised adapters, preference experiments, and evaluations that distinguish better prose from better answers.",
-    "stack": "Conversational data / QLoRA + FSDP2 / Evaluation / GPU serving",
-}
-PROJECTS.append(QWEN_TTRPG)
-
-
-def qwen_preview():
-    return Div(
-        Div(Span("QWEN TTRPG", cls="preview-brand"), Span("Training + inference", cls="preview-label"), cls="preview-bar"),
-        Div(P("One shared model", cls="model-base-label"), Strong("27B", cls="model-size"),
-            P("Qwen base · three task adapters", cls="model-base-caption"),
-            Div(Span("Actions"), Span("Storytelling"), Span("Rules"), cls="adapter-labels"),
-            P("Reviewed data → train → verify → compare", cls="preview-footnote"), cls="model-paper"),
-        cls="project-preview qwen-preview", aria_label="One 27-billion-parameter Qwen base shared by action, storytelling, and rules adapters",
-    )
-
-
-QWEN_STEPS = (
-    {
-        "label": "1. Keep the exchange", "status": "A response needs its context",
-        "description": "Keep the complete question and the exchange that led to it. Consecutive lines from the responding speaker form one target. Review the wording before it becomes a training example.",
-        "context_label": "Prior exchange · input context",
-        "context": "Narrator: The ferry is still tied to the dock.\nPlayer: I ask the operator whether we can leave before the storm.",
-        "target_label": "Next response · reviewed target",
-        "target": "The operator checks the gathering clouds. ‘We can leave now, if you are ready.’ She waits for your answer.",
-        "note": "The response addresses the question and leaves the player's decision open.",
-    },
-    {
-        "label": "2. Choose what learns", "status": "Loss belongs to the response",
-        "description": "The model sees the full exchange. Only the assistant's response and end-of-turn token contribute to the training loss. Required context and target text are never clipped to squeeze an example into the window.",
-        "context_label": "Prompt · excluded from training loss",
-        "context": "Narrator: The ferry is still tied to the dock.\nPlayer: I ask the operator whether we can leave before the storm.",
-        "target_label": "Completion + end token · included in training loss",
-        "target": "The operator checks the gathering clouds. ‘We can leave now, if you are ready.’ She waits for your answer.",
-        "note": "Conceptual loss mask. The real build verifies boundaries using the model's own tokenizer.",
-    },
-    {
-        "label": "3. Test the result", "status": "Check the weights, then the behavior",
-        "description": "Verify that the saved adapter's tensor names, shapes, and values actually reach the model. Compare the base and adapted model on held-out inputs, then review shuffled answers without candidate identities or timing cues.",
-        "context_label": "Same held-out input for both candidates",
-        "context": "A new participant question, its preceding exchange, and the established facts. Keep generation settings matched.",
-        "target_label": "Questions for the review",
-        "target": "Did it answer the latest question?\nDid it preserve what was already established?\nDid it leave the player's choices open?\nDid it invent a fact or rule?",
-        "note": "No fabricated model outputs or scores: this step illustrates the comparison protocol.",
-    },
-)
-
-
-def qwen_walkthrough(step=0):
-    item = QWEN_STEPS[step]
-    return Div(
-        Div(*(A(state["label"], href=f"/projects/qwen-ttrpg?step={index}#walkthrough",
-                hx_get=f"/projects/qwen-ttrpg/walkthrough/{index}", hx_target="#qwen-walkthrough", hx_swap="outerHTML",
-                cls="walkthrough-step selected" if index == step else "walkthrough-step",
-                aria_current="step" if index == step else None) for index, state in enumerate(QWEN_STEPS)),
-            cls="walkthrough-controls", role="group", aria_label="From conversation to model evaluation"),
-        Div(
-            Div(P("THE TRAINING DECISION", cls="eyebrow"), H3(item["status"]), P(item["description"]), cls="sample-context"),
-            Div(
-                Div(P(item["context_label"], cls="training-label"), Pre(item["context"]), cls="training-context"),
-                Div(P(item["target_label"], cls="training-label"), Pre(item["target"]), cls="training-target"),
-                P(item["note"], cls="small-note"), cls="sample-artifact training-example"),
-            cls="walkthrough-body", aria_live="polite"),
-        id="qwen-walkthrough", cls="walkthrough",
     )
 
 
 def qwen_page(step=0):
     return (
         A("← All projects", href="/projects", cls="back-link"),
-        Section(
-            P("Qwen TTRPG / Local model training and serving", cls="eyebrow"),
-            H1("Training an AI to take its turn."),
-            P("A player asks a question, changes course, or challenges an assumption. The next response has to meet that moment and carry the story forward. I built a local pipeline to turn conversational context into training examples, fine-tune Qwen, and test what the resulting model actually does.", cls="project-lede"),
-            Div(A("Explore the training pipeline ↗", href=QWEN_REPO, cls="button-link"),
-                A("See how an example is built ↓", href="#walkthrough", cls="text-link"), cls="actions"),
-            P("Qwen3.8-27B · PyTorch · Axolotl · QLoRA · FSDP2 · llama.cpp", cls="project-stack"),
-            cls="project-hero",
-        ),
-        Section(
-            P("THE MODEL WORK", cls="eyebrow"), H2("Three jobs. One shared base."),
-            P("I fine-tuned task adapters for recognizing game actions, suggesting the next response, and answering questions from supplied rules. The storyteller now returns plain prose; a separate extractor reads the actual conversation to track state. Training runs on two 24 GB GPUs with CPU offload. At inference time, the adapters share a quantized base model and are selected per request."),
-            Div(
-                Div(Span("01", cls="flow-number"), Strong("Prepare"), P("Review responses, preserve their context, and reserve independent sources for evaluation.")),
-                Div(Span("02", cls="flow-number"), Strong("Adapt"), P("Train small LoRA weight updates while keeping the large base model frozen.")),
-                Div(Span("03", cls="flow-number"), Strong("Verify"), P("Reload the exact tensors, compare behavior, and retain failures for review.")),
-                Div(Span("04", cls="flow-number"), Strong("Serve"), P("Route requests to task adapters and measure time to first text and completion.")),
-                cls="context-flow",
-            ), cls="case-section",
-        ),
-        prose_study(),
-        Section(
-            P("INSIDE A TRAINING EXAMPLE", cls="eyebrow"), H2("The question belongs with the answer."),
+        Section(P("Qwen training tools", cls="eyebrow"), H1("Fine-tuning Qwen for Story Copilot"),
+            P("Story Copilot needs to suggest the next reply in a tabletop game. A useful answer responds to the players, respects what their characters know, and leaves unresolved choices open. I built the data, training and evaluation tools to investigate whether a local model could do this better after fine-tuning.", cls="project-lede"),
+            Div(A("Training source code ↗", href=QWEN_REPO, cls="button-link"), A("Latest results ↓", href="#prose-study", cls="text-link"), cls="actions"),
+            P("Qwen3.8-27B · QLoRA / FSDP2 · Two RTX 3090s · llama.cpp", cls="project-stack"), cls="project-hero"),
+        Section(H2("What changed in the training task"),
+            P("Earlier versions asked the storyteller to produce a structured object containing narration and other fields. I separated the jobs: the writer now returns prose, while another model extracts state changes from what the participants actually said. A suggested reply never becomes part of the recorded conversation on its own."),
+            P("The data work then focused on complete responses to other speakers. An isolated narrator line is often a poor training target: the model needs the question, the relevant facts and any restriction on what a character knows. Reviews keep those connections and exclude uncertain boundaries or overlapping targets."), cls="case-section"),
+        Section(H2("An example of the context and training target"),
+            P("In this invented scene, one player has a private clue and another has explicitly chosen to stay outside a room. The next reply must address both players without losing either condition."),
             qwen_walkthrough(step),
-            P("Fixed, self-authored fictional illustration. It contains no source conversation or model-generated result and makes no inference calls.", cls="small-note"),
-            cls="case-section", id="walkthrough",
-        ),
-        Section(
-            P("ENGINEERING DECISIONS", cls="eyebrow"), H2("Follow the evidence all the way to inference."),
-            detail_row("The data pipeline is part of the model", "The companion Conversational Dataset Formatter preserves speaker and source provenance, binds reviews to exact response text, and checks for shared sources and repeated targets across training and evaluation splits. Completion-only masks keep the learning objective tied to the intended response."),
-            detail_row("Training has to fit the machine", "QLoRA limits trainable parameters; FSDP2 and CPU offload distribute training across the available hardware. Activation checkpointing trades extra computation for memory. The launcher checks GPU availability and records the configuration used for each run."),
-            detail_row("A saved adapter must survive the handoff", "Portable export removes checkpoint-wrapper names without altering tensor values. Strict reload compares names, shapes, and loaded values. GGUF conversion checks that attention-head permutations preserve the low-rank weight update."),
-            detail_row("Shared weights still have a scheduling cost", "Each inference request enables its task adapter and explicitly disables the others. Reusing one base saves model memory, but different adapter configurations can queue separately. Context length and concurrent requests still compete for GPU memory."),
-            cls="case-section",
-        ),
-        Section(
-            P("EVALUATION", cls="eyebrow"), H2("An improvement has to survive a comparison."),
-            P("Base and adapted models receive matched inputs and generation settings. The harness records completion status, time to first visible text, total latency, token usage, and explicit response checks. Blinded reviews compare several candidates, with answer labels shuffled independently of execution order."),
-            P("Lower reference loss does not establish a better response. Review considers relevance, continuity, participant agency, and unsupported facts. The original continuation is one possible answer; a good alternative may use different words."),
-            P("Earlier experiments compared supervised recipes and DPO preference training under a structured-response contract. The preference model earned more editorial credit but failed more source-and-task checks than the base, so it was not promoted. Those studies explain the move to a prose-only writer; their scores are not directly comparable with the current experiment."),
-            P("A separate 4B evidence policy uses GRPO to learn when to retrieve, answer, or clarify. On 36 authored scenarios at two seeds, it passed 66 of 72 attempts versus 56 after the same number of extra supervised updates. That comparison measures structured conclusions and citations, not story quality; equal updates did not mean equal compute."),
-            P("The published tools have automated CI checks and have been exercised with the real local tokenizer and model service. The included synthetic cases test the harness; they are not a representative quality benchmark. Training material, fine-tuned weights, and private comparison reports are not distributed.", cls="small-note"),
-            Div(A("Read the evaluation protocol ↗", href=QWEN_REPO + "/blob/main/docs/evaluation.md", cls="text-link"),
-                A("Earlier SFT and DPO study ↗", href=QWEN_REPO + "/blob/main/docs/storyteller-preference-results.md", cls="text-link"),
-                A("Agent RL comparison ↗", href=QWEN_REPO + "/blob/main/docs/agent-rl-results.md", cls="text-link"),
-                A("Inspect the reload checks ↗", href=QWEN_REPO + "/blob/main/qwen_ttrpg/adapters.py", cls="text-link"), cls="actions"),
-            cls="case-section",
-        ),
-        Div(H2("Two repositories. One path from data to deployment."),
-            P("Use the formatter to prepare reviewed examples, then train, evaluate, and serve adapters with Qwen TTRPG. Both run locally with your own material and model files. Cloning the code does not download my fine-tuned weights."),
-            Div(A("Qwen TTRPG ↗", href=QWEN_REPO, cls="button-link"),
-                A("Conversational Dataset Formatter ↗", href=DATASET_REPO, cls="text-link"), cls="actions"),
-            cls="project-outro"),
-    )
-
-
-STORY_COPILOT = {
-    "slug": "story-copilot", "title": "Story Copilot", "status": "Local web app · In development",
-    "tagline": "Keep the story moving. Keep the players in charge.",
-    "description": "Follow a shared story, recover the details that matter, and suggest the facilitator’s next response while preserving each character’s choices and knowledge.",
-    "stack": "Agent decisions / Conversation memory / Grounded rules",
-}
-PROJECTS.append(STORY_COPILOT)
-
-
-def story_preview():
-    return Div(
-        Div(Span("STORY COPILOT", cls="preview-brand"), Span("Authored illustration", cls="preview-label"), cls="preview-bar"),
-        Div(P("“I leave the hatch closed. I want to talk to the caretaker.”", cls="task-brief"),
-            Div(Span("CONTEXT", cls="state-label"), P("The player changed direction. The hatch remains closed."), cls="report-line"),
-            Div(Span("PRIVATE GUIDANCE", cls="state-label"), P("Give the caretaker a reply. Leave the next choice to the player."), cls="report-line"),
-            P("A suggestion is a possibility. The conversation is the record.", cls="preview-footnote"), cls="report-paper"),
-        cls="project-preview frontline-preview", aria_label="Authored illustration of a changed player choice and private facilitator guidance",
+            P("Fixed, self-authored fictional illustration. These passages explain the data contract; they are not private training excerpts, benchmark cases or generated model answers.", cls="small-note"), cls="case-section", id="walkthrough"),
+        prose_study(),
+        Section(H2("Training and serving on two GPUs"),
+            detail_row("Fit the training job", "QLoRA learns small weight updates while the quantized base stays frozen. FSDP2, CPU offload and activation checkpointing let the 27B training job run on two 24 GB cards with 128 GB of host RAM. Recomputing activations and moving data to RAM trade time for memory."),
+            detail_row("Check the exact training input", "The dataset formatter checks source groups, repeated targets and the model’s own chat-template boundaries. Only the response and its end token contribute to loss. Required context is not silently cut to fit a token limit."),
+            detail_row("Verify the saved adapter", "After training, the loader checks tensor names, shapes and values against the exported adapter. Conversion to GGUF checks that attention-head rearrangement preserves the low-rank update. A file existing on disk is not enough to show the model is using the intended weights."),
+            detail_row("Share the base at inference", "The classifier, rules, storyteller and player adapters use the same quantized base. Each request enables its adapter and disables the others. This saves model memory, but requests can still queue and longer context still needs more memory."), cls="case-section"),
+        Section(H2("Earlier SFT, DPO and agent-RL experiments"),
+            P("I also compared supervised recipes and direct preference optimization (DPO) for the earlier structured writer. Preference training improved some editorial judgments but did not fix the reliability problems. Those scores use a different response contract and should not be combined with the prose experiment into one learning curve."),
+            P("A separate 4B model learned evidence decisions through supervised warm-up and GRPO reinforcement learning. On 36 authored scenarios at two seeds, it passed 66/72 attempts versus 56/72 after the same number of extra supervised updates. The checks concerned conclusions and citations, not storytelling. The RL extension took about twice as long; matching update counts did not match compute."),
+            Div(A("SFT and DPO findings ↗", href=QWEN_REPO + "/blob/main/docs/storyteller-preference-results.md", cls="text-link"),
+                A("Agent RL study ↗", href=QWEN_REPO + "/blob/main/docs/agent-rl-results.md", cls="text-link"), cls="actions"), cls="case-section"),
+        Section(H2("Run the process with your own data"),
+            P("The public repositories provide data preparation, training, reload checks, conversion, comparison reports and local serving. They include authored fixtures for exercising the tools. My training material, generated review traces and fine-tuned weights remain private."),
+            Div(A("Qwen training toolkit ↗", href=QWEN_REPO, cls="button-link"), A("Dataset formatter ↗", href=DATASET_REPO, cls="text-link"), A("Story Copilot application →", href="/projects/story-copilot", cls="text-link"), cls="actions"), cls="case-section"),
     )
 
 
 def story_page():
-    repo = "https://github.com/russedavid/story-copilot"
     return (
         A("← All projects", href="/projects", cls="back-link"),
-        Section(P("Story Copilot / Local web application", cls="eyebrow"),
-            H1("A second pair of eyes for the person running the story."),
-            P("Players change their minds. One character learns a secret the others haven’t heard. A correction changes what happened five minutes ago. Story Copilot follows those changes and helps the facilitator find a useful next response.", cls="project-lede"),
-            Div(A("Run it locally ↗", href=repo + "#start-locally", cls="button-link"), A("View source ↗", href=repo, cls="text-link"), cls="actions"),
-            P("Python · FastHTML · HTMX · SQLite · Local models and optional task adapters", cls="project-stack"), cls="project-hero"),
-        Section(Div(P("AT THE TABLE", cls="eyebrow"), H2("The human runs the game."),
-            P("The copilot suggests narration, questions, and rule advice. The facilitator can use a suggestion, ignore it, or ask for another. Only the actual conversation supports the working story state."),
-            P("Bring your own setting, rules, character sheets, and participants—or start with the included original fictional example. Type contributions or opt into separate microphone and system-audio capture.")),
-            story_preview(), cls="example-grid"),
-        Section(P("AGENT BEHAVIOR", cls="eyebrow"), H2("Decide what is missing before answering."),
-            detail_row("Recall the exchange", "Retrieve earlier dialogue with the surrounding questions, replies, and corrections. Keep sources attached to the memory."),
-            detail_row("Inspect a character", "Look up current resources and recorded knowledge. A fact visible to the facilitator is not automatically something every character knows."),
-            detail_row("Consult the campaign’s rules", "Search only the supplied rule documents. Verify quotations and calculate from explicit inputs; ask when the rule or necessary value is missing."),
-            detail_row("Review the draft", "A bounded editing pass checks player agency, knowledge, and continuity against the source. It retains the original draft and explains its edits; separate evaluation judges whether those edits helped."),
-            detail_row("Respond—or clarify", "A bounded decision loop chooses its next evidence tool, then produces private guidance or a concrete question. Its decisions and failures are inspectable in the trace."), cls="case-section"),
-        Section(P("CONTINUITY", cls="eyebrow"), H2("Carry the story across sessions."),
-            P("The application packs complete exchanges and relevant state into a measured context budget. Source revisions invalidate stale work. Continuing a session preserves its history; branching creates an alternative without changing the original."),
-            P("Model requests can share one local base with small task adapters. Speech recognition runs through a separate queue. Starting the application does not start recording."), cls="case-section"),
-        Section(P("THE WRITER AND THE RECORD", cls="eyebrow"), H2("Let the storyteller tell the story."),
-            P("The writer produces scene description, NPC dialogue, questions, and calls for checks as ordinary prose. It no longer has to package its reply as a structured object. A separate model extracts proposed state changes from observed conversation; generated drafts never become evidence of what happened."),
-            P("The local application now supports the newly trained 1,250-example prose adapter alongside the existing classifier, rules assistant, player personalities, and evidence planner. A real UI request verified prose routing and separate extraction. The reviewer flagged that first draft for quality problems and retained it in the trace: successful integration is not the same as a good reply."),
-            A("See the training and held-out comparison →", href="/projects/qwen-ttrpg#prose-study", cls="text-link"), cls="case-section"),
-        Section(P("PLAYER AGENTS", cls="eyebrow"), H2("Different personalities. Different knowledge."),
-            P("Assign an AI player a character and its own personality adapter, then invite it to take a turn. Its tools see the shared conversation, its own sheet, and messages addressed to that character. The facilitator’s notes and other characters’ secrets stay outside its context."),
-            P("Each contribution is labelled as AI speech. A proposed action leaves the outcome to the facilitator; a source correction discards an obsolete reply before it can be posted."),
-            P("Two experimental player LoRAs have been trained and tested on the same local base. Their reference-response loss improved, while blind comparisons found mixed writing quality. The base model remains an explicit option."),
-            A("Read the training results ↗", href=QWEN_REPO + "/blob/main/docs/player-results.md", cls="text-link"), cls="case-section"),
-        Section(P("AGENT LEARNING", cls="eyebrow"), H2("Learn when to look something up."),
-            P("A corrected inventory and a missing rule call for different responses. A separate 4B model practices those decisions using the copilot’s actual evidence tools: inspect a character, recover an exchange, consult a rule, answer, or ask for clarification."),
-            P("A supervised warm-up teaches the response contract. Reinforcement learning then compares alternative attempts against known facts and sources. The evaluation separates the base model, supervised training, and the contribution of RL, with complete traces and reserved scenarios."),
-            P("On 36 authored scenarios tested with two generation seeds, the RL candidate passed 66 of 72 attempts, versus 56 after an equal number of additional supervised updates. The RL extension took about twice as long to train. These checks measure structured conclusions and citations; revised-rule interpretation remains a weakness."),
-            P("The learned policy can now plan evidence lookups for live resource and numerical-rule questions, while the larger model handles broader decisions, writing, and review. Oversized context or a failed policy call falls back to the main model. Numerical rulings go through source validation and deterministic calculation; a policy’s proposed answer cannot change the recorded state."),
-            A("Read the results and method ↗", href=QWEN_REPO + "/blob/main/docs/agent-rl-results.md", cls="text-link"), cls="case-section"),
-        Section(P("EVALUATION", cls="eyebrow"), H2("See how each response was built."),
-            P("Regression tests cover revisions, stale answers, private guidance, rule isolation, context budgets, audio ordering, and session continuity. An original multi-exchange scenario compares the agent loop with a fixed workflow using the same model and source sequence."),
-            P("The live review includes changed choices, character-private information, corrected resource costs, missing rules, and resuming a session. Valid structure and exact citations do not establish narrative quality; those responses need separate judgment."),
-            P("An audio replay follows synthesized conversation through actual transcription, speaker assignment, state updates, retrieval, and private suggestions. It exposed failures that text-only checks missed, including a fragmented question and an editing pass that restored an obsolete balance. Synthetic speech is useful for repeatable integration checks, but does not establish real-world transcription accuracy."),
-            P("The evaluation also replays retained natural conversation through fresh transcription and the copilot. It checks unfinished speech, uncertain speaker identity, and the boundary between conversation and story events. That review found invented retrospective commentary in private notes, extending the source checks beyond the main narration. Without an independently corrected transcript and speaker reference, I do not report word-error or diarization accuracy."),
-            A("Read the evaluation method ↗", href=repo + "/blob/main/docs/evaluation.md", cls="text-link"), cls="case-section"),
-        Section(P("RELATED WORK", cls="eyebrow"), H2("The application and the model workshop."),
-            P("Story Copilot is the interactive application. The Qwen TTRPG toolkit prepares, trains, reloads, and evaluates task adapters from a dataset you provide."),
-            A("Explore the training toolkit →", href="/projects/qwen-ttrpg", cls="text-link"), cls="case-section"),
+        Section(P("Story Copilot / Local web application", cls="eyebrow"), H1("Private suggestions for a tabletop-game facilitator"),
+            P("Story Copilot follows the conversation and suggests what the facilitator could say next. It can consult the scenario, character sheets, earlier exchanges and rules supplied for the game. The facilitator can use a reply, reject it or ask for another. Only the actual conversation updates the record.", cls="project-lede"),
+            Div(A("Run it locally ↗", href=STORY_REPO + "#start-locally", cls="button-link"), A("Source code ↗", href=STORY_REPO, cls="text-link"), cls="actions"),
+            P("FastHTML · SQLite · Local models · Optional audio intake", cls="project-stack"), cls="project-hero"),
+        Section(H2("A scene with two requests and a private clue"),
+            Div(Div(H3("Conversation and established facts"), Pre(STORY_CONTEXT, cls="sample-input")),
+                Div(H3("A possible facilitator reply"), Blockquote(STORY_REPLY),
+                    P("This gives Inez an answer from Ada and Bram a view from the doorway. It leaves the note private and does not decide that Bram enters the workshop. Ada’s account of the departure can still be a lie.")), cls="scene-example"),
+            P("Authored scene and suggested reply, not a recorded model result. It illustrates the behavior the application is intended to support; actual responses can fail these requirements.", cls="small-note"), cls="case-section"),
+        Section(H2("How the application prepares a reply"),
+            detail_row("Follow what was actually said", "Typed contributions and optional audio transcripts feed the conversation record. A separate extractor proposes state updates. The prose writer sees relevant context; its drafts are not fed back as observed events."),
+            detail_row("Retrieve or ask before answering", "A bounded agent loop can inspect a character, recover an exchange or search the campaign’s rule documents. When information is missing, it can ask a question. Rule calculations use explicit inputs and verified arithmetic."),
+            detail_row("Handle corrections and long sessions", "Revising a contribution invalidates dependent observations and obsolete answers. The context builder preserves complete exchanges and relevant state within a measured token budget. Sessions can continue from existing history or branch into a separate version."),
+            detail_row("Review the suggestion", "A separate editing pass checks a draft for continuity, knowledge and player-agency problems. The original and any revision remain in the trace. This adds latency and can over-restrict a reply; it needs evaluation too."), cls="case-section"),
+        Section(H2("The local models"),
+            P("The main 27B base serves task-specific adapters. Two experimental player-personality adapters can take labelled turns using only the character’s permitted context. Their reference loss improved, but small blind writing comparisons were mixed."),
+            P("A separate 4B learned policy handles supported resource and numerical-rule questions. The larger model handles broader decisions, writing and review, and takes over if the smaller policy fails or its context is too large."),
+            P("The latest 1,250-example prose writer is available for private interactive testing. Its separate test preference tied the base model. A real UI request verified the new routing, but the reviewer flagged that first reply; integration success did not make it a good answer."),
+            Div(A("Storyteller training results →", href="/projects/qwen-ttrpg#prose-study", cls="text-link"), A("Player adapter study ↗", href=QWEN_REPO + "/blob/main/docs/player-results.md", cls="text-link"), cls="actions"), cls="case-section"),
+        Section(H2("Workflow failures found in testing"),
+            P("The application tests cover source revisions, stale answers, private knowledge, rule isolation and session continuation. Live exercises also follow conversation through transcription, extraction, retrieval and suggestions."),
+            P("Audio replay exposed a fragmented question and a review pass that restored an obsolete resource balance. Another review found invented retrospective commentary in private notes. Those failures matter even when the response has valid structure and correct-looking citations."),
+            P("Synthetic speech supports repeatable integration tests. Retained natural speech supplies a different stress case. Without an independently corrected transcript and speaker reference, neither supports a word-error or diarization-accuracy claim."),
+            A("Workflow evaluation and findings ↗", href=STORY_REPO + "/blob/main/docs/evaluation.md", cls="text-link"), cls="case-section"),
     )
