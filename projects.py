@@ -31,7 +31,7 @@ CAREER_WORKBENCH = {
 }
 QWEN_TTRPG = {
     "slug": "qwen-ttrpg", "title": "Qwen training tools", "status": "Local GPU training and serving",
-    "description": "Prepare conversational training data, train task-specific LoRAs, and compare them with the base model. I use these tools for Story Copilot on two RTX 3090s; the repos support running the same process with your own data.",
+    "description": "Prepare conversational training data, train task-specific LoRAs, and compare them with the base model. I used these tools to train Story Copilot models on two RTX 3090s; the repos support running the same process with your own data.",
     "stack": "PyTorch · QLoRA / FSDP2 · llama.cpp",
 }
 STORY_COPILOT = {
@@ -125,7 +125,7 @@ def story_preview():
 
 def project_card(project):
     previews = {"frontline": frontline_preview, "otsc": otsc_preview, "career-workbench": career_preview,
-                "qwen-ttrpg": qwen_preview, "story-copilot": story_preview}
+                "qwen-ttrpg": qwen_preview, "story-copilot": story_preview, "ml-compiler-lab": lab_preview, "tile-accelerator": tile_preview}
     return Article(
         Div(P(project["status"], cls="project-status"),
             H3(A(project["title"], href=f"/projects/{project['slug']}")),
@@ -357,4 +357,128 @@ def story_page():
             P("Audio replay exposed a fragmented question and a review pass that restored an obsolete resource balance. Another review found invented retrospective commentary in private notes. Those failures matter even when the response has valid structure and correct-looking citations."),
             P("Synthetic speech supports repeatable integration tests. Retained natural speech supplies a different stress case. Without an independently corrected transcript and speaker reference, neither supports a word-error or diarization-accuracy claim."),
             A("Workflow evaluation and findings ↗", href=STORY_REPO + "/blob/main/docs/evaluation.md", cls="text-link"), cls="case-section"),
+    )
+
+
+LAB_REPO = "https://github.com/russedavid/ml-compiler-lab"
+TILE_REPO = "https://github.com/russedavid/tile-accelerator"
+ML_COMPILER_LAB = {
+    "slug": "ml-compiler-lab", "title": "ML Compiler Lab", "status": "GPU kernels and compiler tools",
+    "description": "Compile model graphs and compare their GPU execution. CuTe kernels, a persistent tensor-core megakernel, and a C++ IREE scheduling pass make layouts, launch costs and intermediate memory use inspectable.",
+    "stack": "CuTe DSL · CUDA Graphs · PyTorch · IREE / MLIR · C++",
+}
+TILE_ACCELERATOR = {
+    "slug": "tile-accelerator", "title": "Tile Accelerator", "status": "Compiler and C++ simulator",
+    "description": "Compile a neural-network block into tile transfers, matrix instructions and dependencies. Execute its binary, check the output, and study how scratch capacity and DMA overlap change an explicit hardware model.",
+    "stack": "Python · C++ · Binary ISA · IREE VM bridge",
+}
+PROJECTS.extend([ML_COMPILER_LAB, TILE_ACCELERATOR])
+
+
+def lab_results():
+    return json.loads((Path(__file__).parent / "assets/data/gpu-kernel-results.json").read_text())
+
+
+def tile_results():
+    return json.loads((Path(__file__).parent / "assets/data/tile-accelerator-results.json").read_text())
+
+
+def lab_preview():
+    return Div(
+        Div(Span("ML COMPILER LAB", cls="preview-brand"), Span("Implemented GPU dataflow", cls="preview-label"), cls="preview-bar"),
+        Div(P("Two projections, one kernel launch", cls="report-heading"),
+            preview_line("COMPUTE", "A thread block owns sixteen independent rows and both tensor-core projections."),
+            preview_line("MEMORY", "The FP16 hidden state stays in shared memory between stages."),
+            preview_line("CHECK", "Compare against conventional launches, CUDA Graph replay and cuBLAS."), cls="report-paper"),
+        cls="project-preview", aria_label="Persistent tensor-core graph implementation",
+    )
+
+
+def tile_preview():
+    return Div(
+        Div(Span("TILE ACCELERATOR", cls="preview-brand"), Span("Binary execution and cost model", cls="preview-label"), cls="preview-bar"),
+        Div(P("Make the transfers explicit", cls="report-heading"),
+            preview_line("COMPILE", "Load tiles, accumulate the matrix product, apply the epilogue and store the result."),
+            preview_line("EXECUTE", "An independent C++ engine checks the generated binary and produces an output."),
+            preview_line("MODEL", "Vary scratch memory, compute rate and DMA overlap; keep estimates labelled."), cls="report-paper"),
+        cls="project-preview", aria_label="Accelerator compiler and simulator workflow",
+    )
+
+
+def gpu_benchmark_view(case_index=0):
+    study = lab_results()
+    cases = study["assessment"]
+    case = cases[case_index]
+    shape = case["shape"]
+    variants = [("conventional-graph", "Conventional CuTe + graph replay"),
+                ("persistent-graph", "Shared-memory megakernel + graph replay"),
+                ("persistent-global-graph", "Global-memory intermediate + graph replay"),
+                ("torch-cublas-graph", "cuBLAS/PyTorch + graph replay")]
+    return Div(
+        Div(*(A(f"{item['shape']['rows']} × {item['shape']['channels']} × {item['shape']['hidden']}",
+                href=f"/projects/ml-compiler-lab?case={i}#measurements",
+                hx_get=f"/projects/ml-compiler-lab/results/{i}", hx_target="#gpu-benchmark-view", hx_swap="outerHTML",
+                cls="walkthrough-step selected" if i == case_index else "walkthrough-step",
+                aria_current="step" if i == case_index else None) for i,item in enumerate(cases)),
+            cls="walkthrough-controls", aria_label="Recorded assessment shapes"),
+        P(f"Rows {shape['rows']}, channels {shape['channels']}, hidden width {shape['hidden']}. Input, weights and hidden state are FP16; accumulation, bias and output are FP32."),
+        Table(Thead(Tr(Th("Execution"), Th("Median CUDA-event interval"), Th("Median host completion"))),
+              Tbody(*(Tr(Td(label), Td(f"{case['engines'][name]['stream_summary']['p50_ms'] * 1000:.2f} µs"),
+                         Td(f"{case['engines'][name]['host_summary']['p50_ms'] * 1000:.2f} µs")) for name,label in variants))),
+        P("Recorded on one RTX 3090. Device-resident input and output; 1,000 observations per variant across five rounds in one process. CUDA-event intervals can include dispatch idle gaps. These are small synthetic workloads, not wearable-device or whole-LLM latency.", cls="small-note"),
+        id="gpu-benchmark-view", cls="walkthrough", aria_live="polite",
+    )
+
+
+def lab_page(case_index=0):
+    return (
+        A("← All projects", href="/projects", cls="back-link"),
+        Section(P("ML Compiler Lab", cls="eyebrow"), H1("GPU kernels and model compilation"),
+            P("I built CuTe kernels for a two-layer residual MLP and compare persistent execution with conventional kernels and CUDA Graph replay. The tensor-core megakernel performs both projections in one launch and keeps the hidden state in shared memory.", cls="project-lede"),
+            Div(A("Source and run instructions ↗", href=LAB_REPO, cls="button-link"), A("Evaluation method ↗", href=LAB_REPO + "/blob/main/docs/evaluation.md", cls="text-link"), cls="actions"),
+            P(ML_COMPILER_LAB["stack"], cls="project-stack"), cls="project-hero"),
+        Section(H2("The graph and its execution"),
+            Pre(Code("H = ReLU(X @ W1 + b1)\nY = ReLU(H @ W2 + b2 + X)"), cls="sample-code"),
+            detail_row("Own a complete row tile", "Each thread block computes sixteen independent rows. It stages operands, runs the first projection, stores the rounded hidden state in shared memory, then runs the second projection. Block barriers protect each producer/consumer phase; there is no global spinning barrier."),
+            detail_row("Check the graph before selecting a schedule", "A separate FP32 path exports the PyTorch graph and verifies its operators, shapes and row dependencies. An original C++ pass in IREE lowers that contract into a persistent or conventional schedule. Cross-row reductions are rejected by the row-owned frontend."),
+            detail_row("Inspect the compiler output", "The CNN baseline retains FX, MLIR, LLVM IR and PTX. CuTe kernels retain generated GPU code for inspection. Attention and an explicitly decomposed recurrent cell also run through the stock compiler."), cls="case-section"),
+        Section(H2("Measured comparisons"),
+            P("The assessment shapes below were separate from the initial development cases. The comparisons include a megakernel that stores the intermediate in global memory, which helps distinguish memory reuse from keeping the same operator schedule in one launch."),
+            gpu_benchmark_view(case_index),
+            Img(src="/public/images/gpu-kernel-assessment.svg", alt="Recorded assessment comparisons for conventional, persistent and cuBLAS graph replay", loading="lazy"),
+            P("The smaller graphs can benefit from persistence. Larger shapes can favor vendor kernels or a different tile schedule. The implementation retains those losses and supplies a conventional path rather than assuming one kernel is best for every shape."),
+            A("Recorded aggregate data ↗", href="/public/data/gpu-kernel-results.json", cls="text-link"), cls="case-section", id="measurements"),
+        Section(H2("Failures the checks caught"),
+            P("An early tile-tuning script captured an empty CUDA Graph on the wrong stream. Another version left partial-channel MMA extents unpadded and produced nonfinite results. Those attempts were rejected. Replay now has to overwrite a poisoned output, and the fixed kernels are checked for memory, shared-memory race and synchronization errors."),
+            P("These tests establish arithmetic and execution behavior with original random weights. The supplied quality evaluator can compare task accuracy and data slices when a user provides a model and a licensed, representative evaluation set. This study makes no perception-accuracy or demographic-fairness claim."), cls="case-section"),
+
+    )
+
+
+def tile_page():
+    study = tile_results()
+    serial,buffered = study["double_buffering"]
+    return (
+        A("← All projects", href="/projects", cls="back-link"),
+        Section(P("Tile Accelerator", cls="eyebrow"), H1("A compiler and simulator for tiled neural-network workloads"),
+            P("I built a small accelerator instruction set and a compiler that makes its memory transfers and dependencies explicit. It supports a residual MLP and a depthwise/pointwise CNN block exported from PyTorch. An independent C++ engine executes the binary so the generated program can be checked against the source model.", cls="project-lede"),
+            Div(A("Source and run instructions ↗", href=TILE_REPO, cls="button-link"), A("Binary contract ↗", href=TILE_REPO + "/blob/main/docs/isa.md", cls="text-link"), cls="actions"),
+            P(TILE_ACCELERATOR["stack"], cls="project-stack"), cls="project-hero"),
+        Section(H2("From a graph to an executable program"),
+            Pre(Code("LOAD2D  input tile → scratch A\nLOAD2D  weight tile → scratch B\nMATMUL  A × B → accumulator C\nEPILOGUE bias / residual / ReLU\nSTORE2D accumulator → output"), cls="sample-code"),
+            detail_row("Check the working set", "A, B, the accumulator, bias and residual have to fit the target's scratch budget. Tile boundaries and partial reduction tiles are explicit. Unsupported operators and shapes fail compilation with a diagnostic."),
+            detail_row("Encode and execute", "The versioned binary includes commands, constants and an input/output contract. The C++ interpreter checks bounds, initialization, dependencies and finite results. An IREE VM native-module bridge can run the same binary across a host runtime boundary."),
+            detail_row("Test precision and request state", "FP16 operand mode uses nearest/ties-to-even rounding and retains FP32 accumulation, bias and output. Tests cover subnormals, overflow, repeated requests, malformed binaries and source-model agreement. Overflow fails before an activation can hide it."), cls="case-section"),
+        Section(H2("Study DMA overlap and architecture choices"),
+            P("Double buffering uses a second pair of operand slots. It can prefetch the next reduction tile while the matrix engine works, with dependencies that prevent a buffer from being overwritten before its consumer finishes."),
+            Table(Thead(Tr(Th("Schedule"), Th("Estimated cycles"), Th("Estimated latency"))),
+                  Tbody(Tr(Td("Serial tile transfers"), Td(f"{serial['estimated_cycles']:,}"), Td(f"{serial['estimated_latency_us']:.2f} µs")),
+                        Tr(Td("Double-buffered transfers"), Td(f"{buffered['estimated_cycles']:,}"), Td(f"{buffered['estimated_latency_us']:.2f} µs")))),
+            P("This example uses a 17 × 65 × 79 MLP, 32 KiB scratch, a 200 MHz modeled clock and the declared DMA/compute rates. Both schedules pass numerical checks. The times are analytical estimates, not measurements from a physical accelerator.", cls="small-note"),
+            Img(src="/public/images/tile-architecture-study.svg", alt="Architecture-model latency and energy estimates with explicit scratch and compute assumptions", loading="lazy"),
+            P("The study also varies scratch capacity, matrix throughput, tile width, bandwidth and component energy. Its area quantity is an illustrative proxy. Calibration against a technology library or real hardware would be needed for chip power and area claims."),
+            A("Recorded study data ↗", href="/public/data/tile-accelerator-results.json", cls="text-link"), cls="case-section"),
+        Section(H2("What the project demonstrates"),
+            P("The software connects a supported model graph to an instruction stream, binary format, runtime boundary and numerical test. The functional interpreter and the cost model remain separate, so a correct answer does not imply an accurate timing prediction."),
+            A("Evaluation and failure handling ↗", href=TILE_REPO + "/blob/main/docs/evaluation.md", cls="text-link"), cls="case-section"),
     )

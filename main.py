@@ -6,7 +6,7 @@ from starlette.concurrency import run_in_threadpool
 from air_quality import handle_aqi_request
 from styles import BASE_STYLES, THEME_SCRIPT
 from blogs import BLOG_POSTS
-from projects import PROJECTS, project_card, project_section, frontline_page, otsc_page, otsc_walkthrough, CAREER_WORKBENCH, career_page, career_walkthrough, QWEN_TTRPG, QWEN_STEPS, qwen_page, qwen_walkthrough, STORY_COPILOT, story_page, training_feature
+from projects import PROJECTS, project_card, project_section, frontline_page, otsc_page, otsc_walkthrough, CAREER_WORKBENCH, career_page, career_walkthrough, QWEN_TTRPG, QWEN_STEPS, qwen_page, qwen_walkthrough, STORY_COPILOT, story_page, training_feature, ML_COMPILER_LAB, TILE_ACCELERATOR, lab_page, tile_page, gpu_benchmark_view, lab_results
 css = Style(BASE_STYLES)
 ASSETS = Path(__file__).resolve().parent / "assets"
 app = FastHTML(
@@ -169,7 +169,7 @@ def home(request):
 def projects_index(request):
     return create_layout(
         "/projects",
-        Div(P("Projects", cls="eyebrow"), H1("AI applications and model training tools"),
+        Div(P("Projects", cls="eyebrow"), H1("Software, models and GPU systems"),
             P("What I built, how it works, and what I found when testing it. The examples are labelled separately from recorded results."), cls="project-index-intro"),
         Div(*(project_card(project) for project in PROJECTS), cls="project-grid"),
         title="Projects",
@@ -235,6 +235,29 @@ def qwen_sample(step: int):
 @rt("/projects/story-copilot")
 def story_copilot(request):
     return create_layout(request.url.path, *story_page(), title="Story Copilot", description=STORY_COPILOT["description"])
+
+
+@rt("/projects/ml-compiler-lab")
+def compiler_lab_project(request):
+    try:
+        case_index = int(request.query_params.get("case", "0"))
+    except ValueError:
+        case_index = 0
+    if not 0 <= case_index < len(lab_results()["assessment"]):
+        case_index = 0
+    return create_layout(request.url.path, *lab_page(case_index), title="ML Compiler Lab", description=ML_COMPILER_LAB["description"])
+
+
+@rt("/projects/ml-compiler-lab/results/{case_index:int}")
+def compiler_results(case_index: int):
+    if not 0 <= case_index < len(lab_results()["assessment"]):
+        return Response("Recorded case not found", status_code=404)
+    return gpu_benchmark_view(case_index)
+
+
+@rt("/projects/tile-accelerator")
+def tile_accelerator_project(request):
+    return create_layout(request.url.path, *tile_page(), title="Tile Accelerator", description=TILE_ACCELERATOR["description"])
 
 
 @rt("/about")
